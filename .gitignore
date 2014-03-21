@@ -1,0 +1,9 @@
+python-for-android
+venv
+concept
+.deps
+.optional-deps
+.project
+.pydevproject
+.settings
+*.idea
