@@ -1,5 +1,6 @@
 import time
 import kivy.lib.osc
+import plyer
 
 if __name__ == '__main__':
     OSC = kivy.lib.osc.init()

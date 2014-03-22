@@ -9,7 +9,7 @@ PIP := $(VENV)/bin/pip
 # Python for Android settings
 PYTHON_FOR_ANDROID := $(WD)/python-for-android
 PYTHON_FOR_ANDROID_PACKAGE := $(PYTHON_FOR_ANDROID)/dist/default
-PY4A_MODULES := "openssl pyjnius kivy"
+PY4A_MODULES := "plyer openssl pyjnius kivy"
 
 # Android SDK setting
 
@@ -56,8 +56,8 @@ logcat:
 	adb logcat python:I *:S
 
 # Setup
-.PHONY: install
-install:
+.PHONY: installenv
+installenv:
 	sudo rm $(VENV) -r -f
 	sudo rm python-for-android -r -f
 	sudo apt-get install build-essential patch git-core ccache ant python-pip python-dev
@@ -68,8 +68,13 @@ install:
 	$(PIP) install cython
 	git clone git://github.com/kivy/python-for-android
 	chmod +x env_var.sh
+
+.PHONY: createdist
+createdist:
 	source env_var.sh; \
 	source "$(VENV)/bin/activate"; \
 	cd $(PYTHON_FOR_ANDROID); \
 	./distribute.sh -m $(PY4A_MODULES)
-	
+
+.PHONY: install
+install: installenv createdist
