@@ -22,7 +22,10 @@ class SigmaWebApp(kivy.app.App):
             service = android.AndroidService('SigmaWeb+', 'Monitorando')
             service.start('')
             self.service = service
-              
+        else:
+            import service.main, threading
+            service = threading.Thread(target=service.main.main, args=(None,))
+            
         self._SigmaWeb = SigmaWeb(self.on_window_change, self.open_settings)
     
     def on_start(self):
@@ -32,6 +35,7 @@ class SigmaWebApp(kivy.app.App):
         config.setdefaults('account', {
                                     'login': '',
                                     'password': ''})
+        #config.set('kivy', 'exit_on_escape', 0)
     
     def build_settings(self, settings):
         jsondata = '[{ "type": "title","title": "Atualização Automatica" }]'
@@ -77,5 +81,5 @@ class SigmaWeb():
     
 #Avoid this script to be run as main
 if __name__ == '__main__':
-    import sys
+    SigmaWebApp().run()
     sys.exit(1)

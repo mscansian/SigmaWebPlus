@@ -1,15 +1,23 @@
 import time
-import kivy.lib.osc
+from kivy.lib import osc
 import plyer
 
-if __name__ == '__main__':
-    OSC = kivy.lib.osc.init()
+def receive_msg(message, *args):
+    print "Received "+message
+
+def main(parameters=None):
+    osc.init()
+    oscid = osc.listen(ipAddr='127.0.0.1', port=3001)
+    osc.bind(oscid, receive_msg, '/some_api')
 
     print "fim"
 
     while True:
-        print "*********  service rodando **********************"
-        time.sleep(3)
+        osc.readQueue(oscid)
+        time.sleep(.5)
+
+if __name__ == '__main__':
+    main()
         
         
         
