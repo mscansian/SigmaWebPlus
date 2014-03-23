@@ -9,6 +9,7 @@ from debug import Debug
 class Monitor():
     parameters = None
     thread = None
+    exit = False
     
     def start(self, parameters=None):
         Debug().log("Monitor inicializado. Configurando...")
@@ -36,16 +37,21 @@ class Monitor():
         self.oscid = osc.listen(ipAddr='127.0.0.1', port=3001)
         osc.bind(self.oscid, self.receiveMessage, '/sigmawebplus')
         
-        while True:
-            print "Thread running..."
+        while (self.exit==False):
+            Debug().log("Thread running...")
             osc.readQueue(self.oscid)
             time.sleep(2)
+            
+        Debug().log("Exiting thread")
+    
+    def kill(self):
+        self.exit = True
     
     def receiveMessage(self, message, *args):
         print "Received: "+message
 
 if __name__ == '__main__':
-    pass
+    Monitor().run()
         
         
         

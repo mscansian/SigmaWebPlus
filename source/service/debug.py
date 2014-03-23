@@ -5,4 +5,4 @@ class Debug():
     __metaclass__ = Singleton
     
     def log(self, message):
-        print "DEBUG: "+message
+        print "SIGMAWEB: "+message

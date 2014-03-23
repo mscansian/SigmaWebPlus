@@ -9,7 +9,7 @@ import kivy.uix.tabbedpanel
 import kivy.uix.label
 import kivy.utils
 
-from eventhandler import EventHandler
+#from eventhandler import EventHandler
 
 class BaseWindow():
     _Root = None

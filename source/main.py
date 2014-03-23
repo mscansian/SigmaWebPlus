@@ -27,7 +27,8 @@ class SigmaWebApp(kivy.app.App):
         config.setdefaults('account', {
                                     'login': '',
                                     'password': ''})
-        #kivy.config.set('kivy', 'exit_on_escape', 0)
+        kivy.Config.set('kivy', 'exit_on_escape', 0)
+        kivy.Config.set('kivy', 'log_enable', 0)
     
     def build_settings(self, settings):
         jsondata = '[{ "type": "title","title": "Atualização Automatica" }]'
@@ -105,8 +106,8 @@ if __name__ == '__main__':
             break
         else:
             #We should ensure that the service is still running
+            monitor.kill()
             break #Todo
     
     Debug().log("Exiting the main program...")
-    monitor.kill() #Kill thread
     sys.exit(0)
