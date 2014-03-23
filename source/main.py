@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import sys
 import kivy.app
 import kivy.config
 import kivy.utils
 
 import layout
+from debug import Debug
 
 class SigmaWebApp(kivy.app.App):
     _SigmaWeb = None
@@ -15,17 +17,7 @@ class SigmaWebApp(kivy.app.App):
     use_kivy_settings = False
 
     #Override methods
-    def build(self):
-        if kivy.utils.platform == 'android':
-            import android
-            print "servico iniciado dentro"
-            service = android.AndroidService('SigmaWeb+', 'Monitorando')
-            service.start('')
-            self.service = service
-        else:
-            import service.main, threading
-            service = threading.Thread(target=service.main.main, args=(None,))
-            
+    def build(self):    
         self._SigmaWeb = SigmaWeb(self.on_window_change, self.open_settings)
     
     def on_start(self):
@@ -35,7 +27,7 @@ class SigmaWebApp(kivy.app.App):
         config.setdefaults('account', {
                                     'login': '',
                                     'password': ''})
-        #config.set('kivy', 'exit_on_escape', 0)
+        #kivy.config.set('kivy', 'exit_on_escape', 0)
     
     def build_settings(self, settings):
         jsondata = '[{ "type": "title","title": "Atualização Automatica" }]'
@@ -77,9 +69,44 @@ class SigmaWeb():
     def changeWindow(self, window):
         self._CurrentWindow = window
         self._WindowChangeCallback(window.getRoot())
-        
+
+
+class MonitorFacade():
+    _Monitor = None
     
-#Avoid this script to be run as main
+    def __init__(self):
+        if kivy.utils.platform == 'android':
+            import android
+            self._Monitor = android.AndroidService('SigmaWeb+', 'Monitorando')
+        else:
+            import service.main
+            self._Monitor = service.main.Monitor()
+
+    def start(self, parametro):
+        self._Monitor.start(parametro)
+    
+    def kill(self):
+        if kivy.utils.platform == 'android':
+            self._Monitor.stop()
+        else:
+            self._Monitor.kill()
+    
+#Program entry point
 if __name__ == '__main__':
-    SigmaWebApp().run()
-    sys.exit(1)
+    #Set up service
+    Debug().log("Tentando iniciar monitor...")
+    monitor = MonitorFacade()
+    monitor.start('parametro')
+    
+    while True:
+        SigmaWebApp().run()
+        if kivy.utils.platform == 'android':
+            #In android platform is safe to leave (the system will keep the service running)
+            break
+        else:
+            #We should ensure that the service is still running
+            break #Todo
+    
+    Debug().log("Exiting the main program...")
+    monitor.kill() #Kill thread
+    sys.exit(0)

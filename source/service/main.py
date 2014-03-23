@@ -1,23 +1,51 @@
-import time
-from kivy.lib import osc
-import plyer
+#System libs
+import time, sys
 
-def receive_msg(message, *args):
-    print "Received "+message
+#Custom
+import kivy.utils
+from debug import Debug
 
-def main(parameters=None):
-    osc.init()
-    oscid = osc.listen(ipAddr='127.0.0.1', port=3001)
-    osc.bind(oscid, receive_msg, '/some_api')
 
-    print "fim"
-
-    while True:
-        osc.readQueue(oscid)
-        time.sleep(.5)
+class Monitor():
+    parameters = None
+    thread = None
+    
+    def start(self, parameters=None):
+        Debug().log("Monitor inicializado. Configurando...")
+        self.parameters = parameters
+        if kivy.utils.platform == 'android': #Run program
+            self.run()
+        else: #Set up thread
+            Debug().log("Criando thread para o monitor")
+            import threading
+            try:
+                self.thread = threading.Thread(target=self.run)
+                self.thread.daemon = False
+                self.thread.start()
+            except:
+                Debug().log("Erro ao criar o thread para o monitor")
+                sys.exit(1)
+                
+    def run(self):
+        import plyer
+        from kivy.lib import osc
+        
+        #Setup OSC
+        print "Monitor: Iniciando OSC"
+        osc.init()
+        self.oscid = osc.listen(ipAddr='127.0.0.1', port=3001)
+        osc.bind(self.oscid, self.receiveMessage, '/sigmawebplus')
+        
+        while True:
+            print "Thread running..."
+            osc.readQueue(self.oscid)
+            time.sleep(2)
+    
+    def receiveMessage(self, message, *args):
+        print "Received: "+message
 
 if __name__ == '__main__':
-    main()
+    pass
         
         
         
