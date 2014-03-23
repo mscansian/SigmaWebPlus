@@ -9,16 +9,16 @@ if __name__ == '__main__':
     if platform <> 'android':
         try:
             import singleinstance
-            PythonInstance = singleinstance.SingleInstance(51361, False)
+            PythonInstance = singleinstance.SingleInstance(51361, True)
         except singleinstance.SingleInstanceException as e:
             sys.exit(e.value)
     
     print "Criando monitor..."
     import service
-    #try:
-        #monitor = service.MonitorLaucher()
-    #except:
-    #    raise
+    try:
+        AppMonitor = service.MonitorLaucher()
+    except:
+        raise
     
     from app import SigmaWebApp
     
@@ -33,5 +33,5 @@ if __name__ == '__main__':
     
     Debug().log("Exiting the main program...")
     PythonInstance.kill()
-    #monitor.kill()
+    AppMonitor.kill()
     sys.exit(0)

@@ -1,51 +1,30 @@
-#System libs
-import time, sys
+import time
 
 #Custom
-import kivy.utils
 from debug import Debug
-
+from kivy.lib import osc
 
 class Monitor():
-    parameters = None
-    thread = None
     exit = False
     
-    def start(self, parameters=None):
-        Debug().log("Monitor inicializado. Configurando...")
-        self.parameters = parameters
-        if kivy.utils.platform == 'android': #Run program
-            self.run()
-        else: #Set up thread
-            Debug().log("Criando thread para o monitor")
-            import threading
-            try:
-                self.thread = threading.Thread(target=self.run)
-                self.thread.daemon = False
-                self.thread.start()
-            except:
-                Debug().log("Erro ao criar o thread para o monitor")
-                sys.exit(1)
-                
-    def run(self):
-        import plyer
-        from kivy.lib import osc
-        
+    def run(self):        
         #Setup OSC
         print "Monitor: Iniciando OSC"
         osc.init()
         self.oscid = osc.listen(ipAddr='127.0.0.1', port=3001)
         osc.bind(self.oscid, self.receiveMessage, '/sigmawebplus')
+        osc.sendMsg("/sigmawebplus")
         
         while (self.exit==False):
             Debug().log("Thread running...")
-            osc.readQueue(self.oscid)
-            time.sleep(2)
-            
-        Debug().log("Exiting thread")
-    
-    def kill(self):
-        self.exit = True
+            osc.readQueue()
+            time.sleep(1)
+        
+        print "4"
+        
+        osc.dontListen()
+        print "5"
+        Debug().log("Monitor: Killed successfully")
     
     def receiveMessage(self, message, *args):
         print "Received: "+message

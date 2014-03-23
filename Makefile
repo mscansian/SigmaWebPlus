@@ -41,8 +41,8 @@ inspect:
 
 .PHONY: distclean
 distclean:
-	rm $(VENV) -r
-	sudo rm python-for-android -r
+	sudo rm $(VENV) -r -f
+	sudo rm python-for-android -r -f
 
 .PHONY: android
 android:
@@ -56,16 +56,22 @@ logcat:
 	adb logcat python:I *:S
 
 # Setup
-.PHONY: installenv
-installenv:
-	sudo rm $(VENV) -r -f
-	sudo rm python-for-android -r -f
-	sudo apt-get install build-essential patch git-core ccache ant python-pip python-dev
-	sudo apt-get install ia32-libs  libc6-dev-i386
+
+.PHONY: install_venv
+install_venv:
+	sudo easy_install pip
 	pip install virtualenv
-	sudo virtualenv -p python2.7 --system-site-packages $(VENV)
+	virtualenv -p python2.7 --system-site-packages $(VENV)
+
+.PHONY: install_pipmodules
+install_pipmodules:
 	$(PIP) install kivy
 	$(PIP) install cython
+
+.PHONY: install_pythonforandroid
+install_pythonforandroid:
+	sudo apt-get install build-essential patch git-core ccache ant python-pip python-dev
+	sudo apt-get install ia32-libs  libc6-dev-i386
 	git clone git://github.com/kivy/python-for-android
 	chmod +x env_var.sh
 
@@ -77,4 +83,4 @@ createdist:
 	./distribute.sh -m $(PY4A_MODULES)
 
 .PHONY: install
-install: installenv createdist
+install: distclean install_venv install_pipmodules install_pythonforandroid createdist
