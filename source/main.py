@@ -7,7 +7,7 @@ import kivy.config
 import kivy.utils
 
 import layout
-from debug import Debug
+from service.debug import Debug
 
 class SigmaWebApp(kivy.app.App):
     _SigmaWeb = None
