@@ -1,9 +1,17 @@
+#Project contruction
 python-for-android
 venv
-concept
+
+#Eclipse
 .deps
 .optional-deps
 .project
 .pydevproject
 .settings
-*.idea
+
+#Python
+*.pyc
+*.pyo
+
+#OS
+*~
