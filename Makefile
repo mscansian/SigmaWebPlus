@@ -59,21 +59,22 @@ logcat:
 
 .PHONY: install_venv
 install_venv:
-	sudo easy_install pip
-	pip install virtualenv
+	sudo apt-get install python-pip -y
+	sudo pip install virtualenv
 	virtualenv -p python2.7 --system-site-packages $(VENV)
 
 .PHONY: install_pipmodules
 install_pipmodules:
-	$(PIP) install kivy
+	sudo apt-get install python-setuptools python-pygame python-opengl python-gst0.10 python-enchant gstreamer0.10-plugins-good libgl1-mesa-dev-lts-quantal libgles2-mesa-dev-lts-quantal -y
+	sudo apt-get install build-essential patch git-core ccache ant python-pip python-dev -y
+	#sudo apt-get install ia32-libs libc6-dev-i386 -y
 	$(PIP) install cython
+	$(PIP) install kivy
 
 .PHONY: install_pythonforandroid
 install_pythonforandroid:
-	sudo apt-get install build-essential patch git-core ccache ant python-pip python-dev
-	sudo apt-get install ia32-libs  libc6-dev-i386
 	git clone git://github.com/kivy/python-for-android
-	chmod +x env_var.sh
+	sudo chmod +x env_var.sh
 
 .PHONY: createdist
 createdist:
