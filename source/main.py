@@ -1,4 +1,4 @@
-print "inicio porra"
+print "Starting /main.py"
 
 from kivy.utils import platform
 import sys
@@ -7,23 +7,37 @@ from service.debug import Debug
 #Program entry point
 if __name__ == '__main__':
     if platform <> 'android':
+        #Creates a handle for SingleInstance (this is not necessary on Android 'cause the OS takes care of this!
         try:
             import singleinstance
-            PythonInstance = singleinstance.SingleInstance(51361, True)
+            PythonInstance = singleinstance.SingleInstance(50362, True)
         except singleinstance.SingleInstanceException as e:
             sys.exit(e.value)
     
-    print "Criando monitor..."
+    try:
+        import threadcomm
+        ThreadComm = threadcomm.ThreadComm(51352, "sigmawebplus")
+    except threadcomm.ThreadCommException as e:
+        sys.exit(e.value)
+    
+    #'''Desabilitado ateh eu terminar o resto!!!
+    print "Starting monitor service..."
     import service
     try:
         AppMonitor = service.MonitorLaucher()
     except:
-        raise
+        raise #your hands
+    #'''
     
     from app import SigmaWebApp
     
     while True:
+        #Run main app and hold until 'SIGTERM' is raised
         SigmaWebApp().run()
+        
+        ThreadComm.sendMsg("alooooow foi msg")
+        
+        #Closing application
         if platform == 'android':
             #In android platform is safe to leave (the system will keep the service running)
             break
@@ -31,7 +45,9 @@ if __name__ == '__main__':
             #We should ensure that the service is still running
             break #Todo
     
+    #Cleaning up the mess
     Debug().log("Exiting the main program...")
-    PythonInstance.kill()
     AppMonitor.kill()
+    PythonInstance.kill()
+    ThreadComm.kill()
     sys.exit(0)

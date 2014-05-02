@@ -27,7 +27,7 @@ class MonitorLaucher():
                 self._monitor = Monitor()
                 
                 self._thread = threading.Thread(target=self._monitor.run)
-                self._thread.daemon = False
+                self._thread.daemon = True
                 self._thread.name = "Monitor"
                 self._thread.start()
             except:
@@ -36,7 +36,7 @@ class MonitorLaucher():
     def kill(self, force=False):
         if (platform <> "android"):
             try:
-                self._monitor.exit = True
+                self._monitor.kill()
                 self._thread.join()
                 print 'fim'
             except:

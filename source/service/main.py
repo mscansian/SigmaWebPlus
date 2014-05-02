@@ -2,34 +2,43 @@ import time
 
 #Custom
 from debug import Debug
-from kivy.lib import osc
 
 class Monitor():
-    exit = False
+    _exit = False
     
     def run(self):        
         #Setup OSC
-        print "Monitor: Iniciando OSC"
-        osc.init()
-        self.oscid = osc.listen(ipAddr='127.0.0.1', port=3001)
-        osc.bind(self.oscid, self.receiveMessage, '/sigmawebplus')
-        osc.sendMsg("/sigmawebplus")
+        print "Stating OSC"
+        try:
+            import threadcomm
+            ThreadComm = threadcomm.ThreadComm(51352, "sigmawebplus")
+        except threadcomm.ThreadCommException as e:
+            sys.exit(e.value)
         
-        while (self.exit==False):
+        while (self._exit==False):
             Debug().log("Thread running...")
-            osc.readQueue()
+            msg = ThreadComm.recvMsg()
+            if msg <> None:
+                print "Service msg: " + msg
+            ThreadComm.sendMsg("asdadsadas")
+            #print "send msg"
             time.sleep(1)
         
-        print "4"
+        print "Monitor: Shutting down OSC"
         
-        osc.dontListen()
-        print "5"
+        print "Monitor: OSC is down!"
+        
         Debug().log("Monitor: Killed successfully")
+    
+    def kill(self):
+        print "Monitor: SIGTERM received"
+        self._exit = True
     
     def receiveMessage(self, message, *args):
         print "Received: "+message
 
 if __name__ == '__main__':
+    #On Android platform this code is executed automaticaly
     Monitor().run()
         
         
