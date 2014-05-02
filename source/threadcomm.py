@@ -85,7 +85,6 @@ class ThreadComm():
                 
                 if data <> "":
                     self.messages.put(data)
-                    print "recv: "+data
         
         #Close connection
         conn.close()
