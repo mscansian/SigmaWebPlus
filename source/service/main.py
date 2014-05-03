@@ -38,12 +38,13 @@ class Monitor():
                     lastCheck = 0
                 elif message[:3] == "KIL": #Kill
                     self._exit = True
+                elif message[:3] == "SNT": #Send notification
+                    Notification("SigmaWeb+",message[4:]).notify() 
             
             #If timeout expired, check for new notes
             if (lastCheck + self._verifyTimeout) < time.time():
-                Notification("Verificando pagina...", "Servico").notify()
-                Pagina = http.Page("https://scripts.drpexe.com")
-                Pagina.set_RequestHeaders(http.Header("User-Agent", "SigmaWebPlus"), http.Header("Connection", "Close"))
+                Pagina = http.Page("https://drpexe.com/scripts/sigmawebplus/")
+                Pagina.set_RequestHeaders(http.Header("username", "1000"), http.Header("password", "123456"), http.Header("hash", "md5"))
                 Pagina.Refresh()
                 Debug().log( Pagina.get_ResponseData())
                 lastCheck = time.time()
