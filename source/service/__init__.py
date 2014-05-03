@@ -2,21 +2,17 @@ from kivy.utils import platform
 from debug import Debug
 
 class MonitorLaucher():
-    _platform = None
-    _monitor = None
-    _thread = None
-    _service = None
+    monitor = None
+    service = None
     
-    def __init__(self, parameter=""):
-        self._platform = platform
-        
+    def __init__(self, parameter=""):        
         Debug().log("Inicializando monitor")
         
         if platform == "android":
             import android
             try:
-                self._service = android.AndroidService('SigmaWeb+', 'Monitorando') 
-                self._service.start()
+                self.service = android.AndroidService('SigmaWeb+', 'Monitorando') 
+                self.service.start()
             except:
                 raise MonitorException("Unable to create monitor service")
         else:
@@ -24,26 +20,25 @@ class MonitorLaucher():
             from main import Monitor 
             
             try:
-                self._monitor = Monitor()
+                self.monitor = Monitor()
                 
-                self._thread = threading.Thread(target=self._monitor.run)
-                self._thread.daemon = True
-                self._thread.name = "Monitor"
-                self._thread.start()
+                self.service = threading.Thread(target=self.monitor.run)
+                self.service.daemon = True
+                self.service.name = "Monitor"
+                self.service.start()
             except:
                 raise MonitorException("Unable to create monitor thread")
             
     def kill(self, force=False):
         if (platform <> "android"):
             try:
-                self._monitor.kill()
-                self._thread.join()
-                print 'fim'
+                self.monitor.kill()
+                self.service.join()
             except:
                 raise MonitorException("Unable to kill thread")
         elif (force==True):
             try:
-                self._service.stop()
+                self.service.stop()
             except:
                 raise MonitorException("Unable to kill service")
 
