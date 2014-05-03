@@ -39,7 +39,11 @@ class Monitor():
                 elif message[:3] == "KIL": #Kill
                     self._exit = True
                 elif message[:3] == "SNT": #Send notification
-                    Notification("SigmaWeb+",message[4:]).notify() 
+                    Notification("SigmaWeb+",message[4:]).notify()
+                elif message[:3] == "UNC": #Username change
+                    self._username = message[4:]  
+                elif message[:3] == "UNP": #Password change
+                    self._password = message[4:]
             
             #If timeout expired, check for new notes
             if (lastCheck + self._verifyTimeout) < time.time():

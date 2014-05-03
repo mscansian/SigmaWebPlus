@@ -14,14 +14,7 @@ if __name__ == '__main__':
         except singleinstance.SingleInstanceException as e:
             sys.exit(e.value)
     
-    #Start threadcomm
-    try:
-        import service.threadcomm
-        ThreadComm = service.threadcomm.ThreadComm(51352, "sigmawebplus")
-    except service.threadcomm.ThreadCommException as e:
-        sys.exit(e.value)
-    
-    print "Starting monitor service..."
+    #Monitor
     import service
     try:
         AppMonitor = service.MonitorLaucher()
@@ -47,5 +40,4 @@ if __name__ == '__main__':
     if platform <> 'android':
         AppMonitor.kill()
         PythonInstance.kill()
-    ThreadComm.kill()
     sys.exit(0)

@@ -12,16 +12,27 @@ from service.debug import Debug
 class SigmaWebApp(kivy.app.App):
     _SigmaWeb = None
     _Service = None
-
+    ThreadComm = None
+    
     #Kivy Configuration
     use_kivy_settings = False
 
     #Override methods
-    def build(self):    
-        self._SigmaWeb = SigmaWeb(self.on_window_change, self.open_settings)
+    def build(self):  
+        #Start threadcomm
+        try:
+            import service.threadcomm
+            self.ThreadComm = service.threadcomm.ThreadComm(51352, "sigmawebplus")
+        except service.threadcomm.ThreadCommException as e:
+            sys.exit(e.value)
+        
+        self._SigmaWeb = SigmaWeb(self.ThreadComm, self.on_window_change, self.open_settings)
     
     def on_start(self):
         pass
+    
+    def on_stop(self):
+        self.ThreadComm.kill()
     
     def build_config(self, config):
         config.setdefaults('account', {
@@ -40,7 +51,9 @@ class SigmaWebApp(kivy.app.App):
             token = (section, key)
             
             if token == ('account', 'login'):
-                pass
+                self.ThreadComm.sendMsg("UNC "+value)
+            elif token == ('account', 'password'):
+                self.ThreadComm.sendMsg("UNP "+value)
     
     #Custom methods
     def on_window_change(self, window):
@@ -50,21 +63,23 @@ class SigmaWeb():
     _CurrentWindow = None
     _WindowChangeCallback = None
     _OpenSettingsCallback = None
+    ThreadComm = None
     
     #Specific methods
     def on_configuracoes_press(self, instance):
         self._OpenSettingsCallback()
     
     def on_update_press(self, instance):
-        pass
+        self.ThreadComm.sendMsg("CKN")
     
     #Common methods
-    def __init__(self, winChangeCallback, openSettingsCallback):
+    def __init__(self, ThreadComm, winChangeCallback, openSettingsCallback):
         self._WindowChangeCallback = winChangeCallback
         self._OpenSettingsCallback = openSettingsCallback
+        self.ThreadComm = ThreadComm
         self.build()
         
-    def build(self):        
+    def build(self):
         self.changeWindow(layout.MainWindow(self.on_configuracoes_press, self.on_update_press))
     
     def changeWindow(self, window):
