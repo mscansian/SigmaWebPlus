@@ -70,7 +70,7 @@ install_venv:
 
 .PHONY: install_pipmodules
 install_pipmodules:
-	sudo apt-get install notify2 -y
+	sudo apt-get install python-notify2 -y
 	sudo apt-get install python-setuptools python-pygame python-opengl python-gst0.10 python-enchant gstreamer0.10-plugins-good libgl1-mesa-dev-lts-quantal libgles2-mesa-dev-lts-quantal -y
 	sudo apt-get install build-essential patch git-core ccache ant python-pip python-dev -y
 	#sudo apt-get install ia32-libs libc6-dev-i386 -y
