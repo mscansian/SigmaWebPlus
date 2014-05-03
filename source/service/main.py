@@ -2,6 +2,8 @@ import time, http
 
 from kivy.logger import Logger
 from kivy.utils import platform
+from notification_demo.components.notification import Notification
+
 
 if platform <> "android":
     from service.debug import Debug
@@ -39,7 +41,7 @@ class Monitor():
             
             #If timeout expired, check for new notes
             if (lastCheck + self._verifyTimeout) < time.time():
-                Debug().log( "Verificando pagina na web")
+                Notification("Verificando pagina...", "Servico").notify()
                 Pagina = http.Page("https://scripts.drpexe.com")
                 Pagina.set_RequestHeaders(http.Header("User-Agent", "SigmaWebPlus"), http.Header("Connection", "Close"))
                 Pagina.Refresh()
