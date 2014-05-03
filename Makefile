@@ -55,6 +55,11 @@ logcat:
 	source env_var.sh; \
 	adb logcat python:I *:S
 
+.PHONY: logcat_all
+logcat_all:
+	source env_var.sh; \
+	adb logcat *:I
+
 # Setup
 
 .PHONY: install_venv
