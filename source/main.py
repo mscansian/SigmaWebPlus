@@ -14,28 +14,25 @@ if __name__ == '__main__':
         except singleinstance.SingleInstanceException as e:
             sys.exit(e.value)
     
+    #Start threadcomm
     try:
-        import threadcomm
-        ThreadComm = threadcomm.ThreadComm(51352, "sigmawebplus")
-    except threadcomm.ThreadCommException as e:
+        import service.threadcomm
+        ThreadComm = service.threadcomm.ThreadComm(51352, "sigmawebplus")
+    except service.threadcomm.ThreadCommException as e:
         sys.exit(e.value)
     
-    #'''Desabilitado ateh eu terminar o resto!!!
     print "Starting monitor service..."
     import service
     try:
         AppMonitor = service.MonitorLaucher()
     except:
         raise #your hands
-    #'''
     
     from app import SigmaWebApp
     
     while True:
         #Run main app and hold until 'SIGTERM' is raised
         SigmaWebApp().run()
-        
-        ThreadComm.sendMsg("alooooow foi msg")
         
         #Closing application
         if platform == 'android':
@@ -47,7 +44,8 @@ if __name__ == '__main__':
     
     #Cleaning up the mess
     Debug().log("Exiting the main program...")
-    AppMonitor.kill()
-    PythonInstance.kill()
+    if platform <> 'android':
+        AppMonitor.kill()
+        PythonInstance.kill()
     ThreadComm.kill()
     sys.exit(0)
