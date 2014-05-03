@@ -96,6 +96,8 @@ class ThreadComm():
                 ready = select([self.socket], [], [], 1)
                 if ready[0]:
                     data = self.socket.recv(1024)
+                    if data == "":
+                        break
                 else:
                     break
                 self.messages.put(data)
