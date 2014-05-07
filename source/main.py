@@ -9,7 +9,7 @@ if __name__ == '__main__':
     if platform <> 'android':
         #Creates a handle for SingleInstance (this is not necessary on Android 'cause the OS takes care of this!
         try:
-            import singleinstance
+            from singleinstance import singleinstance
             PythonInstance = singleinstance.SingleInstance(50362, True)
         except singleinstance.SingleInstanceException as e:
             sys.exit(e.value)
