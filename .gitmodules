@@ -1,3 +1,6 @@
 [submodule "source/singleinstance"]
 	path = source/singleinstance
 	url = git@github.com:mscansian/python-singleinstance.git
+[submodule "source/service/threadcomm"]
+	path = source/service/threadcomm
+	url = git@github.com:mscansian/python-threadcomm.git

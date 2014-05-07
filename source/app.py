@@ -21,9 +21,9 @@ class SigmaWebApp(kivy.app.App):
     def build(self):  
         #Start threadcomm
         try:
-            import service.threadcomm
-            self.ThreadComm = service.threadcomm.ThreadComm(51352, "sigmawebplus")
-        except service.threadcomm.ThreadCommException as e:
+            from service.threadcomm import threadcomm
+            self.ThreadComm = threadcomm.ThreadComm(51352, "sigmawebplus")
+        except threadcomm.ThreadCommException as e:
             sys.exit(e.value)
         
         self._SigmaWeb = SigmaWeb(self.ThreadComm, self.on_window_change, self.open_settings)

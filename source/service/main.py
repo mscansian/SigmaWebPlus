@@ -19,7 +19,7 @@ class Monitor():
         
         #Start ThreadComm
         try:
-            import threadcomm
+            from threadcomm import threadcomm
             ThreadComm = threadcomm.ThreadComm(51352, "sigmawebplus")
         except threadcomm.ThreadCommException as e:
             sys.exit(e.value)
