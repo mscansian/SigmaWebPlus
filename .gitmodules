@@ -1,0 +1,3 @@
+[submodule "source/singleinstance"]
+	path = source/singleinstance
+	url = git@github.com:mscansian/python-singleinstance.git
