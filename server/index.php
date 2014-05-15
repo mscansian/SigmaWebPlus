@@ -1,5 +1,8 @@
 <?php
+	//Seta o charset para UTF8 para suportar acentos
 	ini_set('default_charset','UTF-8');
+	
+	//Inclui a classe que faz as solicitacoes HTTP
 	require 'curl.php';
 	
 	//Get InnerHTML for DOM
@@ -21,7 +24,7 @@
 
 	$hash = $_SERVER['HTTP_HASH'];
 	
-	$request = new cUrl(); 
+	$request = new cUrl();
 	
 	//Login
 	$response = $request->requestPost("https://sigmaweb.cav.udesc.br/sw/sigmaweba.php", array(LSIST => "SigmaWeb",LUNID => "UDESC",lusid => $username,luspa => $password,opta => "Login"));
@@ -85,9 +88,9 @@
 	}
 	
 	//Get resultados parciais de cada turma
-	$Turma = array(Codigo=>"FGE2001", Turma=>"A", Centro=>"CCT");
-	//foreach ($Turmas as $Turma)
-	//{
+	//Nota: Eu tenho vergonha de mim mesmo por este codigo!!! (Nao perca seu tempo aqui)
+	foreach ($Turmas as &$Turma)
+	{
 		$request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb1.php?var=R6655");
 		$request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb4.php");
 		$request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb5.php");
@@ -99,48 +102,64 @@
 		}
 		else
 		{
-			$Nome = "GABRIEL SIMÕES"; //Debug
 			$NotasAluno = array();
 			$HTML = new DOMDocument; @$HTML->loadHTML($response); @$XPATH = new DOMXPath($HTML);
 			$NumNotas = $XPATH->query("/html/body/table[2]/tr[@bgcolor='#D6D6FF']/th")->length;
-			for ($a=3;$a<=($NumNotas-3);$a++)
+			$NumLinhas = ceil(($NumNotas-5)/5);
+			for ($a=3;$a<=($NumNotas-2);$a++)
 			{
 				$Nota = explode("<br>",DOMinnerHTML($XPATH->query("/html/body/table[2]/tr[@bgcolor='#D6D6FF']/th")->item($a)));
 				array_push($NotasAluno, array(Nome=>substr($Nota[0],1,-1), Peso=>$Nota[1]));
 			}
-			print_r($NotasAluno);
-			/*
-			$NotasAluno = array($XPATH->query("/html/body/table[2]/tr/td[contains(., '".utf8_encode(strtoupper($Nome))."')]/..")->item(0));
-			$NumNotas = $XPATH->query("td", $NotasAluno[0])->length;
-			if ($NumLinhas > 1)
+			
+			$NotasAluno_Table = $XPATH->query("/html/body/table[2]/tr/td[contains(., '".utf8_encode(strtoupper($Nome))."')]/..")->item(0);
+			for ($a=0; $a<=$NumLinhas-1;$a++)
 			{
-				for ($a=2;$a<=$NumLinhas;$a++)
+				for ($b=($a*5); ($b<=($a*5)+4) && ($b<=$NumNotas-4-$NumLinhas); $b++)
 				{
-					array_push($NotasAluno, $XPATH->query("following-sibling::*[1]", $NotasAluno[0])->item(0));
-					$NumNotas += $XPATH->query("td", $NotasAluno[$a-1])->length;
-				}				
+					$NumColuna = ($b+(3*($a==0))-(5*$a));
+					$NotasAluno[$b]['Nota'] = DOMinnerHTML($XPATH->query("td", $NotasAluno_Table)->item($NumColuna));
+				}
+				
+				if ($b<=$NumNotas-4-$NumLinhas)
+				{
+					$NotasAluno_Table = $XPATH->query("following-sibling::*[1]", $NotasAluno_Table)->item(0);
+				}
 			}
-			echo $NumNotas;
-			*/
+			
+			$Turma['Notas'] = $NotasAluno;
 		}
-	//}
-	
-	echo "<hr id='comeca resposnse'>".$response;
-	//echo $response;
-	
-	/*
-	 <SigmaWeb>
+	}
+	unset($Turma);
+
+		
+	echo "<SigmaWeb>
 	<Aluno>
-	<Nome>Matheus</Nome>
-	<Status>4 - Matriculas Fechadas</Status>
-	<FotoHash>sdsdj3ne3hdsa</FotoHash>
-	<Semestre>2014/1</Semestre>
-	<Matriculado>2013/2</Matriculado>
+		<Nome>".$Nome."</Nome>
+		<Matricula>".$Matricula."</Matricula>
+		<TipoAluno>".$TipoAluno."</TipoAluno>
+		<Status>".$Status."</Status>
+		<FotoHash></FotoHash>
+		<Semestre>".$Semestre."</Semestre>
+		<Matriculado></Matriculado>
+		<Centro>".$Centro."</Centro>
 	</Aluno>
-	<Materia COD="CDI2001" Nome="Calculo Diferencial e Integral 2" Turma="E">
-	<Nota Peso="30%" Desc="Minha nota 123">10.5</Nota>
-	<Exame>5.0</Exame>
-	</Materia>
-	</SigmaWeb>
-	*/
+	<Materias>\n";
+
+	foreach ($Turmas as $Turma)
+	{
+		echo "		<Materia COD='".$Turma['Codigo']."' Nome='".$Turma['Nome']."' Turma='".$Turma['Turma']."' Centro='".$Turma['Centro']."'>\n";
+		if (isset($Turma['Notas']))
+		{
+			foreach ($Turma['Notas'] as $Nota)
+			{
+				echo "			<Nota Peso='".$Nota['Peso']."' Desc='".$Nota['Nome']."'>".$Nota['Nota']."</Nota>\n";
+			}
+			echo "			<Exame></Exame>\n";
+		}
+		echo "		</Materia>\n";
+	}
+	echo "	</Materias>\n";
+	echo "</SigmaWeb>";
+
 ?>
