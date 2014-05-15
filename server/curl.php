@@ -29,7 +29,10 @@ class cUrl
 		$this->object = curl_init();
 		curl_setopt($this->object, CURLOPT_RETURNTRANSFER, 1); //Forca cURL a retornar a resposta do server (ao inves de dar print)
 		curl_setopt($this->object, CURLOPT_HEADER, 0); //Forca cURL a retirar os HEADERS da resposta
-		$this->random = md5(crypto_rnd().getenv("REMOTE_ADDR").$_SERVER['HTTP_USERNAME']); //Cria nome do arquivo de cookies usando 3 parametros: crypto_rnd, ip de acesso e matricula (o md5 serve para deixar o nome com um formato padrao)
+		
+		//Cria nome do arquivo de cookies usando 3 parametros: crypto_rnd, ip de acesso e matricula (o md5 serve para deixar o nome com um formato padrao)
+		$crypto_object = new crypto_rnd();
+		$this->random = $crypto_object->rnd(getenv("REMOTE_ADDR").$_SERVER['HTTP_USERNAME']);
 		
 		/* AVISO: O certificado o SigmaWeb esta vencido desde 2006, para permitir a autenticacao eu desabilitei o check por host.
 		 * A comunicacao continua criptografada, porem nao eh possivel verificar se o servidor eh autentico ou nao
