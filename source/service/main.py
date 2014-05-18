@@ -10,9 +10,13 @@ if platform <> "android":
 else:
     from debug import Debug
 
-class Monitor():
-    _verifyTimeout = 10 #Seconds
+class Service():
     _exit = False
+    
+    _verifyTimeout = 0 #Minutes
+    _username = None
+    _password = None
+    _lastHash = None
     
     def run(self):        
         Debug().log("Monitor: Started successfully")
@@ -21,6 +25,7 @@ class Monitor():
         try:
             from threadcomm import threadcomm
             ThreadComm = threadcomm.ThreadComm(51352, "sigmawebplus")
+            ThreadComm.waitConnected()
         except threadcomm.ThreadCommException as e:
             sys.exit(e.value)
         
@@ -32,6 +37,7 @@ class Monitor():
             #Check for ThreadComm messages
             message = ThreadComm.recvMsg()
             if message <> None:
+                print "Service RCV: "+message
                 if message[:3] == "TOC": #Timeout change
                     self._verifyTimeout = message[4:]
                 elif message[:3] == "CKN": #Check now
@@ -44,16 +50,24 @@ class Monitor():
                     self._username = message[4:]  
                 elif message[:3] == "UNP": #Password change
                     self._password = message[4:]
+                elif message[:3] == "HSC": #Hash change
+                    self._lastHash = message[4:]
+            
+            print self._verifyTimeout
             
             #If timeout expired, check for new notes
-            if (lastCheck + self._verifyTimeout) < time.time():
-                Pagina = http.Page("https://drpexe.com/scripts/sigmawebplus/")
-                Pagina.set_RequestHeaders(http.Header("username", "1000"), http.Header("password", "123456"), http.Header("hash", "md5"))
-                Pagina.Refresh()
-                Debug().log( Pagina.get_ResponseData())
-                lastCheck = time.time()
-            
-            time.sleep(1)
+            if self._username == None or self._password == None:
+                if (lastCheck + (self._verifyTimeout*60)) < time.time():
+                    try:
+                        Pagina = http.Page("https://drpexe.com/scripts/sigmawebplus2/")
+                        Pagina.set_RequestHeaders(http.Header("username", self._username), http.Header("password", self._password), http.Header("hash", self._lastHash))
+                        Pagina.Refresh()
+                        Debug().log( Pagina.get_ResponseData())
+                    except:
+                        pass
+                    lastCheck = time.time()
+
+            time.sleep(0.1)
         
         Debug().log("Monitor: Killed successfully")
     
@@ -62,19 +76,4 @@ class Monitor():
 
 if __name__ == '__main__':
     #On Android platform this code is executed automaticaly
-    Monitor().run()
-        
-        
-        
-        
-
-    #import http
-
-    #Pagina = http.Page("https://www.math.unl.edu/~shartke2/computer/phpinfo.php")
-    #Pagina.set_RequestHeaders(http.Header("User-Agent", "meuvalor"), http.Header("Connection", "Close"))
-    #Pagina.Refresh()
-
-    #for header in Pagina.get_ResponseCookies():
-    #    print header.get_Name() + " -> "+header.get_Value()
-
-    #print Pagina.get_ResponseData()
+    Service().run()

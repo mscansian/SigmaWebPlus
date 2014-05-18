@@ -16,3 +16,6 @@ venv
 
 #OS
 *~
+
+#Kivy
+kivy.ini

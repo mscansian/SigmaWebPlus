@@ -1,0 +1,18 @@
+[
+	{
+		"type": "bool",
+		"title": "Atualizar automaticamente",
+		"desc": "Selecione para o SigmaWeb+ atualizar as notas automaticamente",
+		"section": "account",
+		"key": "update_auto",
+		"true": "1" 
+	},
+	
+	{ 
+		"type": "numeric",
+		"title": "Intervalo de atualizacao",
+		"desc": "Intervalo em minutos que as notas serao atualizadas",
+		"section": "account",
+		"key": "update_time"
+	}
+]
