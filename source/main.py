@@ -58,22 +58,23 @@ class SigmaWeb:
         if message <> None:
             if message[:3] == "NNA": #New Notas Available
                 self._kivy.updateNotas(message[4:])
+            elif message[:3] == "UPW": #Usuario ou matricula errado
+                pass
         
     
     def on_ConfigChanged(self, config, value):
-            print "EDITANDO CONFIG: "+config
             if config == 'timeout':
                 self._ThreadComm.sendMsg("TOC "+value)
-                print "foi"
             elif config == 'login':
                 self._ThreadComm.sendMsg("UNC "+value)
             elif config == 'password':
                 self._ThreadComm.sendMsg("UNP "+value)
             elif config == 'hash':
                 self._ThreadComm.sendMsg("HSC "+value)
+            elif config == 'auto_timeout':
+                self._ThreadComm.sendMsg("ATC "+value)
                     
     def on_NotasRequested(self):
-        print "mandaaaa"
         self._ThreadComm.sendMsg("CKN")
 
 if __name__ == '__main__':
