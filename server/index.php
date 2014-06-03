@@ -21,8 +21,14 @@
 	}
 	
 	//Get input data
-
+	$username = $_SERVER['HTTP_USERNAME'];
+	$password = $_SERVER['HTTP_PASSWORD'];
 	$hash = $_SERVER['HTTP_HASH'];
+	
+	if (!($username <> "" && $password <> ""))
+	{
+		die('<error>Username or password blank</error>');
+	}
 	
 	$request = new cUrl();
 	
