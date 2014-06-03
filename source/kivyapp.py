@@ -6,6 +6,7 @@ import kivy.app
 import kivy.config
 import kivy.utils
 import kivy.clock
+import kivy.uix.boxlayout
 
 import layout
 from service.debug import Debug
@@ -29,7 +30,8 @@ class KivyApp(kivy.app.App):
     #Custom methods
     def changeWindow(self, window):
         self._GUI.change(window)
-        self.root = self._GUI.getRoot()
+        self.root.clear_widgets()
+        self.root.add_widget(self._GUI.getRoot())
     
     def setCallbacks(self, update, configchange, programExit, notasreq):
         self._callback_update = update
@@ -48,14 +50,19 @@ class KivyApp(kivy.app.App):
         self.open_settings()
     
     def callback_Login(self, *args):
-        pass
+        self.config.set('account', 'login', self._GUI.getLoginMatricula())
+        self.config.set('account', 'password', self._GUI.getLoginSenha())
+        self.config.write()
+        
+        self.on_config_change(self.config, 'account', 'login', self.config.get('account', 'login'))
+        self.on_config_change(self.config, 'account', 'password', self.config.get('account', 'password'))
+        self.changeWindow("main")
         
     #Override methods
     def build(self):
         #Load GUI
         self._GUI = layout.GUI()
         self._GUI.setCallbacks(self.callback_VerifyNotas, self.callback_Configuracoes, self.callback_Login)
-        self.changeWindow("main")
         
         #Schedule update
         kivy.clock.Clock.schedule_interval(self._callback_update, 0)
@@ -65,29 +72,38 @@ class KivyApp(kivy.app.App):
         self._callback_configchange('password', self.config.get('account', 'password'))
         self._callback_configchange('timeout', self.config.get('account', 'update_time'))
         self._callback_configchange('hash', self.config.get('account', 'lasthash'))
-        print "CONFIGURA: "+self.config.get('account', 'update_time')
+        
+        self.root = kivy.uix.boxlayout.BoxLayout()
+    
+    def on_start(self):
+        #Select window to open
+        if self.config.get('account', 'login') == "":
+            self.changeWindow("login")
+        else:
+            self.changeWindow("main")
         
     def on_stop(self):
         self._callback_programexit()
     
     def build_config(self, config):
-        config.setdefaults('account', {'login': '','password': '', 'update_time': '60', 'lasthash': '', 'update_auto': '1'})
+        config.setdefaults('account', {'login': '','password': '', 'update_time': '60', 'lasthash': '', 'update_auto': '1', 'notas_data': ''})
         kivy.Config.set('kivy', 'exit_on_escape', 0)
         kivy.Config.set('kivy', 'log_enable', 0)
-        
-        #self.config = config
     
     def build_settings(self, settings):
         jsondata = open('config.json', 'r').read()
         settings.add_json_panel('SigmaWeb+', self.config, data=jsondata)
     
     def on_config_change(self, config, section, key, value):
+        print "kivy config change"
         if config is self.config:
             token = (section, key)
             
             if token == ('account', 'login'):
                 self._callback_configchange('login', value)
             elif token == ('account', 'password'):
-                self._callback_configchange('login', value)
+                self._callback_configchange('password', value)
             elif token == ('account', 'update_time'):
                 self._callback_configchange('timeout', value)
+            elif token == ('account', 'update_auto'):
+                self._callback_configchange('auto_timeout', value)
