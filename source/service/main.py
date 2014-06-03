@@ -14,8 +14,9 @@ class Service():
     _exit = False
     
     _verifyTimeout = 0 #Minutes
-    _username = None
-    _password = None
+    _verifyAuto = 1
+    _username = ""
+    _password = ""
     _lastHash = None
     
     def run(self):        
@@ -39,7 +40,9 @@ class Service():
             if message <> None:
                 print "Service RCV: "+message
                 if message[:3] == "TOC": #Timeout change
-                    self._verifyTimeout = message[4:]
+                    self._verifyTimeout = float(message[4:])
+                elif message[:3] == "ATC": #Auto check
+                    self._verifyAuto = message[4:]
                 elif message[:3] == "CKN": #Check now
                     lastCheck = 0
                 elif message[:3] == "KIL": #Kill
@@ -53,21 +56,21 @@ class Service():
                 elif message[:3] == "HSC": #Hash change
                     self._lastHash = message[4:]
             
-            print self._verifyTimeout
-            
             #If timeout expired, check for new notes
-            if self._username == None or self._password == None:
+            if not ((self._username == "") or (self._password == "")):
                 if (lastCheck + (self._verifyTimeout*60)) < time.time():
                     try:
-                        Pagina = http.Page("https://drpexe.com/scripts/sigmawebplus2/")
+                        print "Checking..."
+                        Pagina = http.Page("http://www.sigmawebplus.com.br/server/")
                         Pagina.set_RequestHeaders(http.Header("username", self._username), http.Header("password", self._password), http.Header("hash", self._lastHash))
                         Pagina.Refresh()
-                        Debug().log( Pagina.get_ResponseData())
+                        print Pagina.get_ResponseData()
                     except:
+                        raise
                         pass
                     lastCheck = time.time()
 
-            time.sleep(0.1)
+            time.sleep(1)
         
         Debug().log("Monitor: Killed successfully")
     

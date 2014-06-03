@@ -95,7 +95,7 @@ class KivyApp(kivy.app.App):
         settings.add_json_panel('SigmaWeb+', self.config, data=jsondata)
     
     def on_config_change(self, config, section, key, value):
-        print "kivy config change"
+        print "kivy config change "+key
         if config is self.config:
             token = (section, key)
             

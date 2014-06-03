@@ -73,6 +73,8 @@ class SigmaWeb:
                 self._ThreadComm.sendMsg("HSC "+value)
             elif config == 'auto_timeout':
                 self._ThreadComm.sendMsg("ATC "+value)
+            else:
+                print "unable "+config
                     
     def on_NotasRequested(self):
         self._ThreadComm.sendMsg("CKN")
