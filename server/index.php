@@ -138,34 +138,46 @@
 	}
 	unset($Turma);
 
+	//Generate the output
 		
-	echo "<SigmaWeb>
+	$output = "<SigmaWeb>
 	<Aluno>
 		<Nome>".$Nome."</Nome>
 		<Matricula>".$Matricula."</Matricula>
 		<TipoAluno>".$TipoAluno."</TipoAluno>
 		<Status>".$Status."</Status>
-		<FotoHash></FotoHash>
 		<Semestre>".$Semestre."</Semestre>
-		<Matriculado></Matriculado>
 		<Centro>".$Centro."</Centro>
 	</Aluno>
 	<Materias>\n";
 
 	foreach ($Turmas as $Turma)
 	{
-		echo "		<Materia COD='".$Turma['Codigo']."' Nome='".$Turma['Nome']."' Turma='".$Turma['Turma']."' Centro='".$Turma['Centro']."'>\n";
+		$output .= "		<Materia COD='".$Turma['Codigo']."' Nome='".$Turma['Nome']."' Turma='".$Turma['Turma']."' Centro='".$Turma['Centro']."'>\n";
 		if (isset($Turma['Notas']))
 		{
 			foreach ($Turma['Notas'] as $Nota)
 			{
-				echo "			<Nota Peso='".$Nota['Peso']."' Desc='".$Nota['Nome']."'>".$Nota['Nota']."</Nota>\n";
+				$output .= "			<Nota Peso='".$Nota['Peso']."' Desc='".$Nota['Nome']."'>".$Nota['Nota']."</Nota>\n";
 			}
-			echo "			<Exame></Exame>\n";
+			$output .= "			<Exame></Exame>\n";
 		}
-		echo "		</Materia>\n";
+		$output .= "		</Materia>\n";
 	}
-	echo "	</Materias>\n";
-	echo "</SigmaWeb>";
+	$output .= "	</Materias>\n";
+	
+	//Hash the output and respond
+	$output_hash = md5($output);
+	$output .= "	<Hash>".$output_hash."</Hash>\n";
+	$output .= "</SigmaWeb>";
+	
+	if ($hash == $output_hash)
+	{
+		die('Up-to-date');
+	}
+	else
+	{
+		echo $output;
+	}
 
 ?>
