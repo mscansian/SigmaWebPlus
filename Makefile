@@ -1,7 +1,7 @@
 # Project settings
 SHELL := /bin/bash
 WD := $(shell pwd)
-PROJECT_DIR := $(WD)/project
+PROJECT_DIR := $(WD)/source
 VENV := $(WD)/venv
 PY := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
@@ -9,7 +9,7 @@ PIP := $(VENV)/bin/pip
 # Python for Android settings
 PYTHON_FOR_ANDROID := $(WD)/python-for-android
 PYTHON_FOR_ANDROID_PACKAGE := $(PYTHON_FOR_ANDROID)/dist/default
-PY4A_MODULES := "openssl pyjnius kivy"
+PY4A_MODULES := "plyer openssl pyjnius kivy"
 
 # Android SDK setting
 
@@ -41,8 +41,8 @@ inspect:
 
 .PHONY: distclean
 distclean:
-	rm $(VENV) -r
-	sudo rm python-for-android -r
+	sudo rm $(VENV) -r -f
+	sudo rm python-for-android -r -f
 
 .PHONY: android
 android:
@@ -55,21 +55,39 @@ logcat:
 	source env_var.sh; \
 	adb logcat python:I *:S
 
+.PHONY: logcat_all
+logcat_all:
+	source env_var.sh; \
+	adb logcat *:I
+
 # Setup
-.PHONY: install
-install:
-	sudo rm $(VENV) -r -f
-	sudo rm python-for-android -r -f
-	sudo apt-get install build-essential patch git-core ccache ant python-pip python-dev
-	sudo apt-get install ia32-libs  libc6-dev-i386
-	pip install virtualenv
-	sudo virtualenv -p python2.7 --system-site-packages $(VENV)
-	$(PIP) install kivy
+
+.PHONY: install_venv
+install_venv:
+	sudo apt-get install python-pip -y
+	sudo pip install virtualenv
+	virtualenv -p python2.7 --system-site-packages $(VENV)
+
+.PHONY: install_pipmodules
+install_pipmodules:
+	sudo apt-get install python-notify2 -y
+	sudo apt-get install python-setuptools python-pygame python-opengl python-gst0.10 python-enchant gstreamer0.10-plugins-good libgl1-mesa-dev-lts-quantal libgles2-mesa-dev-lts-quantal -y
+	sudo apt-get install build-essential patch git-core ccache ant python-pip python-dev -y
+	#sudo apt-get install ia32-libs libc6-dev-i386 -y
 	$(PIP) install cython
+	$(PIP) install kivy
+
+.PHONY: install_pythonforandroid
+install_pythonforandroid:
 	git clone git://github.com/kivy/python-for-android
-	chmod +x env_var.sh
+	sudo chmod +x env_var.sh
+
+.PHONY: createdist
+createdist:
 	source env_var.sh; \
 	source "$(VENV)/bin/activate"; \
 	cd $(PYTHON_FOR_ANDROID); \
 	./distribute.sh -m $(PY4A_MODULES)
-	
+
+.PHONY: install
+install: distclean install_venv install_pipmodules install_pythonforandroid createdist

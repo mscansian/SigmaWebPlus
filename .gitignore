@@ -1,4 +1,4 @@
-#Project contruction
+#Project
 python-for-android
 venv
 
@@ -15,3 +15,13 @@ venv
 
 #OS
 *~
+
+#Python
+*.pyo
+*.pyc
+
+#OS
+*~
+
+#Kivy
+kivy.ini

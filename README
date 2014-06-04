@@ -1,4 +1,4 @@
-BEM VINDO AO SIGMAWEB+
+BEM VINDO AO SIGMAWEB+ (dev)
 
 Agora é possível saber quando uma nota é publicada no sistem sem ter o trabalho acessar o SigmaWeb e verificar várias vezes ao dia. Com o SigmaWeb+, você deixa esta tarefa para o computador.
 O funcionamento é simples, basta escolher quais materias acompanhar e o intervalo de tempo para verificação. O SigmaWeb+ roda em segundo plano e automaticamente verifica, em intervalos de tempo predeterminados, se novas notas foram publicadas. Os avisos de notas publicadas são mostrado para o usuário utilizando as dicas de balão do Windows.

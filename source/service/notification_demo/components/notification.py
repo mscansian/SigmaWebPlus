@@ -20,21 +20,20 @@ class NotificationBase():
 
 class NotificationAndroid(NotificationBase):
     def notify(self):
-        ''' Displays a native Android notification '''        
+        ''' Displays a native Android notification '''
         from jnius import autoclass
-        
         AndroidString = autoclass('java.lang.String')
-        PythonActivity = autoclass('org.renpy.android.PythonActivity')
+        PythonService = autoclass('org.renpy.android.PythonService')
         NotificationBuilder = autoclass('android.app.Notification$Builder')
         Drawable = autoclass('org.drpexe.sigmawebplus.R$drawable')
         icon = Drawable.icon
-        noti = NotificationBuilder(PythonActivity.mActivity)
+        noti = NotificationBuilder(PythonService.mService)
         #noti.setDefaults(Notification.DEFAULT_ALL)
         noti.setContentTitle(AndroidString(self.title.encode('utf-8')))
         noti.setContentText(AndroidString(self.message.encode('utf-8')))
         noti.setSmallIcon(icon)
         noti.setAutoCancel(True)
-        nm = PythonActivity.mActivity.getSystemService(PythonActivity.NOTIFICATION_SERVICE)
+        nm = PythonService.mService.getSystemService(PythonService.NOTIFICATION_SERVICE)
         nm.notify(0,noti.build())
 
 
@@ -75,7 +74,7 @@ class NotificationOsx(NotificationBase):
 class NotificationWindows(NotificationBase):
     def notify(self):
         ''' Displays a notification using the win32 API '''
-        import balloontip
+        from win32 import balloontip
         ballontip.balloon_tip(self.title, self.message)
 
 
