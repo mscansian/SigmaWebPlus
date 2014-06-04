@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 import time, http
 
 from kivy.logger import Logger
@@ -14,10 +17,10 @@ class Service():
     _exit = False
     
     _verifyTimeout = 0 #Minutes
-    _verifyAuto = 1
+    _verifyAuto = 0
     _username = ""
     _password = ""
-    _lastHash = None
+    _lastHash = ""
     
     def run(self):        
         Debug().log("Monitor: Started successfully")
@@ -57,17 +60,32 @@ class Service():
                     self._lastHash = message[4:]
             
             #If timeout expired, check for new notes
-            if not ((self._username == "") or (self._password == "")):
+            if not ((self._username == "") or (self._password == "") or (self._verifyAuto == 0)):
                 if (lastCheck + (self._verifyTimeout*60)) < time.time():
                     try:
                         print "Checking..."
+                        response = ""
                         Pagina = http.Page("http://www.sigmawebplus.com.br/server/")
                         Pagina.set_RequestHeaders(http.Header("username", self._username), http.Header("password", self._password), http.Header("hash", self._lastHash))
                         Pagina.Refresh()
-                        print Pagina.get_ResponseData()
+                        response = Pagina.get_ResponseData()
                     except:
-                        raise
                         pass
+                    
+                    #Avalia resposta
+                    if not (response[:10] == "Up-to-date"):
+                        
+                        #Se nao for a primeira vez que esta sendo feita a busca, joga uma notificacao
+                        if self._lastHash <> "":
+                            Notification("SigmaWeb+","Novas notas disponíveis").notify()
+                        
+                        #Salva a nova hash
+                        self._lastHash = response[:32]
+                        
+                        #Manda as informacoes para o App exibir na tela
+                        ThreadComm.sendMsg("NNA "+response)
+                        
+                    
                     lastCheck = time.time()
 
             time.sleep(1)

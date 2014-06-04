@@ -9,6 +9,7 @@ import kivy.clock
 import kivy.uix.boxlayout
 
 import layout
+import serverXMLparser
 from service.debug import Debug
 
 class KivyApp(kivy.app.App):
@@ -39,8 +40,20 @@ class KivyApp(kivy.app.App):
         self._callback_programexit = programExit
         self._callback_notasrequested = notasreq
     
-    def updateNotas(self, notas):
-        pass
+    def updateNotas(self, hash, notas):      
+        #Salva hash e notas
+        self.config.set('account', 'lasthash', hash)
+        self.config.set('account', 'notas_data', notas)
+        self.config.write()
+        
+        #Faz um parse do codigo XML para mostrar as notas
+        Aluno = serverXMLparser.alunoXML(notas)
+        
+        #Modifica pagina mostrando as notas
+        try:
+            self._GUI.setNotas(Aluno.materias)
+        except:
+            raise
     
     #GUI callbacks
     def callback_VerifyNotas(self, *args):
@@ -50,12 +63,16 @@ class KivyApp(kivy.app.App):
         self.open_settings()
     
     def callback_Login(self, *args):
+        #Salva dados no arquivo de configuracao
         self.config.set('account', 'login', self._GUI.getLoginMatricula())
         self.config.set('account', 'password', self._GUI.getLoginSenha())
         self.config.write()
         
+        #Chama os callbacks de configuracao modificada
         self.on_config_change(self.config, 'account', 'login', self.config.get('account', 'login'))
         self.on_config_change(self.config, 'account', 'password', self.config.get('account', 'password'))
+        
+        #Sai da tela Login e vai para a Tela Main
         self.changeWindow("main")
         
     #Override methods
@@ -67,20 +84,25 @@ class KivyApp(kivy.app.App):
         #Schedule update
         kivy.clock.Clock.schedule_interval(self._callback_update, 0)
         
-        #Send configuration to service
+        #Chama os callbacks de configuracao modificada (objetivo aqui eh mandar isso para o service)
         self._callback_configchange('login', self.config.get('account', 'login'))
         self._callback_configchange('password', self.config.get('account', 'password'))
         self._callback_configchange('timeout', self.config.get('account', 'update_time'))
         self._callback_configchange('hash', self.config.get('account', 'lasthash'))
+        self._callback_configchange('auto_timeout', self.config.get('account', 'update_auto')) #Esse ultimo serve para o Monitor iniciar a busca
         
         self.root = kivy.uix.boxlayout.BoxLayout()
     
     def on_start(self):
-        #Select window to open
+        #Seleciona qual janela abrir
         if self.config.get('account', 'login') == "":
             self.changeWindow("login")
         else:
             self.changeWindow("main")
+            
+            #Carrega notas salvas
+            if not (self.config.get('account', 'lasthash') == ''):
+                self.updateNotas(self.config.get('account', 'lasthash'), self.config.get('account', 'notas_data'))
         
     def on_stop(self):
         self._callback_programexit()

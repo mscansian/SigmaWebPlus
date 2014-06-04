@@ -8,6 +8,7 @@ import kivy.uix.button
 import kivy.uix.tabbedpanel
 import kivy.uix.label
 import kivy.uix.textinput
+import kivy.uix.listview
 import kivy.utils
 
 
@@ -46,6 +47,9 @@ class GUI():
             self._currentWindow = MainWindow(self._callback_Configuracoes, self._callback_VerifyNotas)
         else:
             raise
+    
+    def setNotas(self, notas):
+        self._currentWindow.setNotas(notas)
     
     def getRoot(self):
         return self._currentWindow.getRoot()             
@@ -91,6 +95,28 @@ class MainWindow(BaseWindow):
         self._ButtonUpdate.text = 'Verificar notas'
         self._ButtonUpdate.bind(on_press=updatecallback)
         self._Buttons.add_widget(self._ButtonUpdate)
+    
+    def setNotas(self, notas):
+        #Deleta os paineis antigos
+        self._Tabs.clear_widgets()
+        
+        for materia in notas:
+            painel = kivy.uix.tabbedpanel.TabbedPanelHeader(text=materia.get("Cod"))
+            
+            notas_list = []
+            for nota in materia.get("Notas"):
+                nota_valor = nota.get("Valor")
+                if nota_valor == None:
+                    nota_valor = "--"
+                
+                notas_list.append(nota.get("Desc")+" ("+nota.get("Peso")+"): "+nota_valor)
+            
+            print notas_list
+            lista = kivy.uix.listview.ListView(item_strings=notas_list)
+            painel.content = lista
+            
+            #Adiciona painel no layout
+            self._Tabs.add_widget(painel)
     
 class LoginWindow(BaseWindow):
     _Logo = None

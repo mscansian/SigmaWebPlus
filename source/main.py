@@ -57,7 +57,12 @@ class SigmaWeb:
         message = self._ThreadComm.recvMsg()
         if message <> None:
             if message[:3] == "NNA": #New Notas Available
-                self._kivy.updateNotas(message[4:])
+                #Separa notas e Hash
+                hash = message[4:(32+4)]
+                notas = message[(32+5):]
+                
+                #Manda as notas para a aplicacao kivy
+                self._kivy.updateNotas(hash, notas)
             elif message[:3] == "UPW": #Usuario ou matricula errado
                 pass
         
