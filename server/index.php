@@ -165,11 +165,10 @@
 		$output .= "		</Materia>\n";
 	}
 	$output .= "	</Materias>\n";
+	$output .= "</SigmaWeb>";
 	
 	//Hash the output and respond
 	$output_hash = md5($output);
-	$output .= "	<Hash>".$output_hash."</Hash>\n";
-	$output .= "</SigmaWeb>";
 	
 	if ($hash == $output_hash)
 	{
@@ -177,6 +176,7 @@
 	}
 	else
 	{
+		echo $output_hash."\n";
 		echo $output;
 	}
 
