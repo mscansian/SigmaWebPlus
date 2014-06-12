@@ -1,16 +1,21 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from kivy.graphics import Color, Rectangle
+from kivy.lang import Builder
+from kivy.properties import ListProperty
+
 import kivy.uix.image
 import kivy.uix.boxlayout
 import kivy.uix.anchorlayout
 import kivy.uix.button
-import kivy.uix.tabbedpanel
+import kivy.uix.carousel
 import kivy.uix.label
 import kivy.uix.textinput
 import kivy.uix.listview
 import kivy.utils
 
+import kivy.core.window
 
 class GUI():
     _currentWindow = None
@@ -20,6 +25,10 @@ class GUI():
     _callback_Configuracoes = None
     _callback_Login = None
     
+    def __init__(self):
+        #kivy.core.window.Window.clearcolor = (246/255.0,246/255.0,246/255.0, 1)
+        kivy.core.window.Window.clearcolor = (0,0,0,1)
+        
     #GUI variables
     def getLoginMatricula(self):
         try:
@@ -65,20 +74,26 @@ class MainWindow(BaseWindow):
     _Tabs = None
     _Buttons = None
     
-    
     def __init__(self, configcallback, updatecallback):
+        Builder.load_file('layout.kv')
+        
         self._Root = kivy.uix.boxlayout.BoxLayout()
         self._Root.orientation = 'vertical'
          
-        self._Logo = kivy.uix.image.Image()
+        self._Logo = Logo()
         self._Logo.source = 'res/logo.png'
         self._Logo.size_hint = (1, 0.3)
+        #self._Logo.allow_stretch = True
         self._Root.add_widget(self._Logo)
         
-        self._Tabs = kivy.uix.tabbedpanel.TabbedPanel()
-        self._Tabs.do_default_tab = True
-        self._Tabs.default_tab_text = 'Início'
+        self._Tabs = kivy.uix.carousel.Carousel(direction='right')
         self._Root.add_widget(self._Tabs)
+        
+        self._TabsHolder = kivy.uix.boxlayout.BoxLayout(orientation='vertical')
+        self._Tabs.add_widget(self._TabsHolder)
+        
+        self._Tip = kivy.uix.label.Label(text='Deslize para a esquerda para ver as notas')
+        self._TabsHolder.add_widget(self._Tip)
         
         self._Buttons = kivy.uix.boxlayout.BoxLayout()
         self._Buttons.size_hint = (1, 0.1)
@@ -86,12 +101,12 @@ class MainWindow(BaseWindow):
         
         #Configuration button is not necessary on android devices
         if kivy.utils.Platform() <> "android":
-            self._ButtonConfig = kivy.uix.button.Button()
+            self._ButtonConfig = Button()
             self._ButtonConfig.text = 'Configurações'
             self._ButtonConfig.bind(on_press=configcallback)
             self._Buttons.add_widget(self._ButtonConfig)
         
-        self._ButtonUpdate = kivy.uix.button.Button()
+        self._ButtonUpdate = Button()
         self._ButtonUpdate.text = 'Verificar notas'
         self._ButtonUpdate.bind(on_press=updatecallback)
         self._Buttons.add_widget(self._ButtonUpdate)
@@ -100,33 +115,41 @@ class MainWindow(BaseWindow):
         #Deleta os paineis antigos
         self._Tabs.clear_widgets()
         
+        #Adiciona novamente a Home
+        self._Tabs.add_widget(self._TabsHolder)
+        
         for materia in notas:
-            painel = kivy.uix.tabbedpanel.TabbedPanelHeader(text=materia.get("Cod"))
+            TabsHolder = kivy.uix.boxlayout.BoxLayout(orientation='vertical')
+            self._Tabs.add_widget(TabsHolder)
             
-            notas_list = []
+            TabsHeader = TabHeader(text=materia.get("Cod")+'\n'+materia.get("Nome"), size_hint=(1,0.2))
+            TabsHolder.add_widget(TabsHeader)
+            
+                      
+            notas_list = ''
             for nota in materia.get("Notas"):
                 nota_valor = nota.get("Valor")
                 if nota_valor == None:
                     nota_valor = "--"
                 
-                notas_list.append(nota.get("Desc")+" ("+nota.get("Peso")+"): "+nota_valor)
+                notas_list = notas_list + nota.get("Desc")+" ("+nota.get("Peso")+"): "+nota_valor + '\n'
             
-            print notas_list
-            lista = kivy.uix.listview.ListView(item_strings=notas_list)
-            painel.content = lista
+            lista = kivy.uix.label.Label(text=notas_list)
+            TabsHolder.add_widget(lista)
+
             
-            #Adiciona painel no layout
-            self._Tabs.add_widget(painel)
     
 class LoginWindow(BaseWindow):
     _Logo = None
     _LoginBox = None
     
     def __init__(self, logincallback):
+        Builder.load_file('layout.kv')
+        
         self._Root = kivy.uix.boxlayout.BoxLayout()
         self._Root.orientation = 'vertical'
         
-        self._Logo = kivy.uix.image.Image()
+        self._Logo = Logo()
         self._Logo.source = 'res/logo.png'
         self._Logo.size_hint = (1, 0.3)
         self._Root.add_widget(self._Logo)
@@ -136,28 +159,45 @@ class LoginWindow(BaseWindow):
         self._LoginBox.size_hint = (1, 0.5)
         self._Root.add_widget(self._LoginBox)
         
-        self._LoginMatriculaBox = kivy.uix.boxlayout.BoxLayout()
-        self._LoginBox.add_widget(self._LoginMatriculaBox)
-        
-        self._LoginMatriculaLabel = kivy.uix.label.Label(text="Matricula", size_hint=(0.3,1))
-        self._LoginMatriculaBox.add_widget(self._LoginMatriculaLabel)
-        
         self._LoginMatricula = kivy.uix.textinput.TextInput()
         self._LoginMatricula.multiline = False
-        self._LoginMatriculaBox.add_widget(self._LoginMatricula)
-        
-        self._LoginSenhaBox = kivy.uix.boxlayout.BoxLayout()
-        self._LoginBox.add_widget(self._LoginSenhaBox)
-        
-        self._LoginSenhaLabel = kivy.uix.label.Label(text="Senha", size_hint=(0.3,1))
-        self._LoginSenhaBox.add_widget(self._LoginSenhaLabel)
+        self._LoginMatricula.hint_text='Matricula'
+        self._LoginMatricula.input_type='number'
+
+        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.1))
+        Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
+        Box.add_widget(self._LoginMatricula)
+        Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
+        self._LoginBox.add_widget(Box)
         
         self._LoginSenha = kivy.uix.textinput.TextInput()
         self._LoginSenha.password = True
         self._LoginSenha.multiline = False
-        self._LoginSenhaBox.add_widget(self._LoginSenha)
+        self._LoginSenha.hint_text='Senha'
+
+        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.1))
+        Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
+        Box.add_widget(self._LoginSenha)
+        Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
+        self._LoginBox.add_widget(Box)
         
         self._LoginButton = kivy.uix.button.Button()
         self._LoginButton.text = 'Entrar'
         self._LoginButton.bind(on_press=logincallback)
-        self._LoginBox.add_widget(self._LoginButton)
+        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.1))
+        Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
+        Box.add_widget(self._LoginButton)
+        Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
+        self._LoginBox.add_widget(Box)
+        
+        
+        self._LoginBox.add_widget(kivy.uix.label.Label(text=''))
+
+class TabHeader(kivy.uix.button.Button):
+    pass
+
+class Logo(kivy.uix.image.Image):
+    pass
+
+class Button(kivy.uix.button.Button):
+    pass
