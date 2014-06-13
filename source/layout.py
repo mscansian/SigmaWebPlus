@@ -163,8 +163,9 @@ class LoginWindow(BaseWindow):
         self._LoginMatricula.multiline = False
         self._LoginMatricula.hint_text='Matricula'
         self._LoginMatricula.input_type='number'
+        self._LoginMatricula.font_size = self._LoginMatricula.font_size * 1.5 
 
-        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.1))
+        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.15))
         Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
         Box.add_widget(self._LoginMatricula)
         Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
@@ -174,8 +175,9 @@ class LoginWindow(BaseWindow):
         self._LoginSenha.password = True
         self._LoginSenha.multiline = False
         self._LoginSenha.hint_text='Senha'
+        self._LoginSenha.font_size = self._LoginSenha.font_size * 1.5 
 
-        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.1))
+        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.15))
         Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
         Box.add_widget(self._LoginSenha)
         Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
@@ -184,7 +186,7 @@ class LoginWindow(BaseWindow):
         self._LoginButton = kivy.uix.button.Button()
         self._LoginButton.text = 'Entrar'
         self._LoginButton.bind(on_press=logincallback)
-        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.1))
+        Box = kivy.uix.boxlayout.BoxLayout(size_hint=(1,0.20))
         Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
         Box.add_widget(self._LoginButton)
         Box.add_widget(kivy.uix.label.Label(text='', size_hint=(0.1,1)))
