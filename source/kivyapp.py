@@ -63,6 +63,9 @@ class KivyApp(kivy.app.App):
         self.open_settings()
     
     def callback_Login(self, *args):
+        if (self._GUI.getLoginMatricula() == "") or (self._GUI.getLoginSenha() == ""):
+            return False
+        
         #Salva dados no arquivo de configuracao
         self.config.set('account', 'login', self._GUI.getLoginMatricula())
         self.config.set('account', 'password', self._GUI.getLoginSenha())
