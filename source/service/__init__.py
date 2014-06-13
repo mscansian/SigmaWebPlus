@@ -11,7 +11,8 @@ class ServiceLaucher():
         if platform == "android":
             import android
             try:
-                self.service = android.AndroidService('SigmaWeb+', 'Monitorando') 
+                self.service = android.AndroidService('SigmaWeb+', 'Monitorando')
+                self.service.stop()
                 self.service.start()
             except:
                 raise ServiceException("Unable to create monitor service")

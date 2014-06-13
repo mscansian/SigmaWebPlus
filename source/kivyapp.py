@@ -109,6 +109,8 @@ class KivyApp(kivy.app.App):
         self._callback_programexit()
         
     def on_pause(self):
+        if self._GUI.windowname == "login":
+            return False
         return True
     
     def on_resume(self):
