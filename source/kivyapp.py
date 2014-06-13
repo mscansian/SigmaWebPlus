@@ -106,9 +106,15 @@ class KivyApp(kivy.app.App):
         
     def on_stop(self):
         self._callback_programexit()
+        
+    def on_pause(self):
+        return True
+    
+    def on_resume(self):
+        pass
     
     def build_config(self, config):
-        config.setdefaults('account', {'login': '','password': '', 'update_time': '60', 'lasthash': '', 'update_auto': '1', 'notas_data': ''})
+        config.setdefaults('account', {'login': '','password': '', 'update_time': '60', 'lasthash': '', 'update_auto': '1', 'notas_data': '', 'savepw': '1'})
         kivy.Config.set('kivy', 'exit_on_escape', 0)
         kivy.Config.set('kivy', 'log_enable', 0)
     
@@ -129,3 +135,6 @@ class KivyApp(kivy.app.App):
                 self._callback_configchange('timeout', value)
             elif token == ('account', 'update_auto'):
                 self._callback_configchange('auto_timeout', value)
+            elif token == ('account', 'savepw'):
+                #Todo: Deletar dados de acesso
+                self._callback_configchange('savepw', value)

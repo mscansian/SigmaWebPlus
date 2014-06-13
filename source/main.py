@@ -49,9 +49,10 @@ class SigmaWeb:
         
     
     def on_Exit(self):
-        self._singleinstance.kill()
+        if platform <> 'android':
+            self._singleinstance.kill()
         self._ThreadComm.kill()
-        self._Service.kill()
+        self._Service.kill(force=True)
     
     def update(self, *args):
         message = self._ThreadComm.recvMsg()
