@@ -18,10 +18,10 @@
 	
 	{
 		"type": "bool",
-		"title": "Salvar matrícula e senha",
-		"desc": "Ative para salvar dados de acesso automaticamente",
+		"title": "Deletar meus dados pessoais",
+		"desc": "Deletar seus dados pessoais e sair do app",
 		"section": "account",
-		"key": "savepw",
+		"key": "delall",
 		"true": "1" 
 	}
 ]

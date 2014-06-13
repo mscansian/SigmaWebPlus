@@ -95,6 +95,9 @@ class KivyApp(kivy.app.App):
         self.root = kivy.uix.boxlayout.BoxLayout()
     
     def on_start(self):
+        self.config.set('account', 'delall', '0')
+        self.config.write()
+        
         #Seleciona qual janela abrir
         if self.config.get('account', 'login') == "":
             self.changeWindow("login")
@@ -117,7 +120,7 @@ class KivyApp(kivy.app.App):
         pass
     
     def build_config(self, config):
-        config.setdefaults('account', {'login': '','password': '', 'update_time': '60', 'lasthash': '', 'update_auto': '1', 'notas_data': '', 'savepw': '1'})
+        config.setdefaults('account', {'login': '','password': '', 'update_time': '60', 'lasthash': '', 'update_auto': '1', 'notas_data': '', 'delall': '0'})
         kivy.Config.set('kivy', 'exit_on_escape', 0)
         kivy.Config.set('kivy', 'log_enable', 0)
     
@@ -138,8 +141,13 @@ class KivyApp(kivy.app.App):
                 self._callback_configchange('timeout', value)
             elif token == ('account', 'update_auto'):
                 self._callback_configchange('auto_timeout', value)
-            elif token == ('account', 'savepw'):
-                if value == '0':
+            elif token == ('account', 'delall'):
+                if value == '1':
                     self.config.set('account', 'login', '')
                     self.config.set('account', 'password', '')
-                self._callback_configchange('savepw', value)
+                    self.config.set('account', 'update_time', '60')
+                    self.config.set('account', 'lasthash', '')
+                    self.config.set('account', 'update_auto', '1')
+                    self.config.set('account', 'notas_data', '')
+                    self.config.write()
+                self.stop()
