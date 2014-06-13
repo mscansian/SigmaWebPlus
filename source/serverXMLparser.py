@@ -11,9 +11,11 @@ class alunoXML:
     semestre = None
     centro = None
     
-    materias = []
+    materias = None
     
     def __init__(self, xml_data):
+            self.materias = []
+        
             XML = lxml.etree.XML(xml_data)
             
             #Verifica root tag
