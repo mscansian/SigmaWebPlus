@@ -64,10 +64,9 @@ class KivyApp(kivy.app.App):
     
     def callback_Login(self, *args):
         #Salva dados no arquivo de configuracao
-        if self.config.get('account', 'savepw') == '1':
-            self.config.set('account', 'login', self._GUI.getLoginMatricula())
-            self.config.set('account', 'password', self._GUI.getLoginSenha())
-            self.config.write()
+        self.config.set('account', 'login', self._GUI.getLoginMatricula())
+        self.config.set('account', 'password', self._GUI.getLoginSenha())
+        self.config.write()
         
         #Chama os callbacks de configuracao modificada
         self.on_config_change(self.config, 'account', 'login', self.config.get('account', 'login'))
