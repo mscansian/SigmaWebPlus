@@ -77,7 +77,7 @@ class Service():
                         
                         #Se nao for a primeira vez que esta sendo feita a busca, joga uma notificacao
                         if self._lastHash <> "":
-                            Notification("SigmaWeb+","Novas notas disponíveis").notify()
+                            Notification("SigmaWeb+","Novas notas disponiveis!").notify()
                         
                         #Salva a nova hash
                         self._lastHash = response[:32]
