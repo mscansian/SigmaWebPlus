@@ -14,5 +14,14 @@
 		"desc": "Intervalo em minutos que as notas serao atualizadas",
 		"section": "account",
 		"key": "update_time"
+	},
+	
+	{
+		"type": "bool",
+		"title": "Salvar matrícula e senha",
+		"desc": "Ative para salvar dados de acesso automaticamente",
+		"section": "account",
+		"key": "savepw",
+		"true": "1" 
 	}
 ]

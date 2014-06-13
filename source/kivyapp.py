@@ -64,9 +64,10 @@ class KivyApp(kivy.app.App):
     
     def callback_Login(self, *args):
         #Salva dados no arquivo de configuracao
-        self.config.set('account', 'login', self._GUI.getLoginMatricula())
-        self.config.set('account', 'password', self._GUI.getLoginSenha())
-        self.config.write()
+        if self.config.get('account', 'savepw') == '1':
+            self.config.set('account', 'login', self._GUI.getLoginMatricula())
+            self.config.set('account', 'password', self._GUI.getLoginSenha())
+            self.config.write()
         
         #Chama os callbacks de configuracao modificada
         self.on_config_change(self.config, 'account', 'login', self.config.get('account', 'login'))
@@ -136,5 +137,7 @@ class KivyApp(kivy.app.App):
             elif token == ('account', 'update_auto'):
                 self._callback_configchange('auto_timeout', value)
             elif token == ('account', 'savepw'):
-                #Todo: Deletar dados de acesso
+                if value == '0':
+                    self.config.set('account', 'login', '')
+                    self.config.set('account', 'password', '')
                 self._callback_configchange('savepw', value)

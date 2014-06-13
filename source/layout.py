@@ -18,6 +18,7 @@ import kivy.utils
 import kivy.core.window
 
 class GUI():
+    windowname = None
     _currentWindow = None
     
     #Callbacks
@@ -48,11 +49,10 @@ class GUI():
         self._callback_Login = Login
     
     def change(self, window):
+        self.windowname = window
         if window == "login":
-            print "login win"
             self._currentWindow = LoginWindow(self._callback_Login)
         elif window == "main":
-            print "main win"
             self._currentWindow = MainWindow(self._callback_Configuracoes, self._callback_VerifyNotas)
         else:
             raise

@@ -79,6 +79,8 @@ class SigmaWeb:
                 self._ThreadComm.sendMsg("HSC "+value)
             elif config == 'auto_timeout':
                 self._ThreadComm.sendMsg("ATC "+value)
+            elif config == 'savepw':
+                pass
             else:
                 print "unable "+config
                     
