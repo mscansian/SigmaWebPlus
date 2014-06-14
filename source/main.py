@@ -6,7 +6,7 @@ from kivyapp import KivyApp
 
 class SigmaWeb:
     _singleinstance = None
-    _kivy = None
+    kivy = None
     _ThreadComm = None
     _Service = None
     
@@ -14,9 +14,9 @@ class SigmaWeb:
         pass
 
     def run(self):
-        self.on_Start()
+        self.on_start()
     
-    def on_Start(self):
+    def on_start(self):
         #Creates a handle for SingleInstance (this is not necessary on Android 'cause the OS takes care of this!
         if platform <> 'android':
             try:
@@ -43,12 +43,12 @@ class SigmaWeb:
             raise #your hands
         
         #Load and start kivy
-        self._kivy = KivyApp()
-        self._kivy.setCallbacks(self.update, self.on_ConfigChanged, self.on_Exit, self.on_NotasRequested)
-        self._kivy.run()
+        self.kivy = KivyApp()
+        self.kivy.setCallback(self.update, self.on_event)
+        self.kivy.run()
         
     
-    def on_Exit(self):
+    def on_stop(self):
         if platform <> 'android':
             self._singleinstance.kill()
         self._ThreadComm.kill()
@@ -63,29 +63,33 @@ class SigmaWeb:
                 notas = message[(32+5):]
                 
                 #Manda as notas para a aplicacao kivy
-                self._kivy.updateNotas(hash, notas)
+                self.kivy.updateNotas(hash, notas)
             elif message[:3] == "UPW": #Usuario ou matricula errado
                 pass
         
-    
-    def on_ConfigChanged(self, config, value):
+    def on_event(self, eventType, *args):
+        if eventType == "VerificarNotas":
+            self._ThreadComm.sendMsg("CKN")
+        elif eventType == "ConfigChange":
+            config = args[2]
+            value = args[3]
             if config == 'timeout':
                 self._ThreadComm.sendMsg("TOC "+value)
-            elif config == 'login':
-                self._ThreadComm.sendMsg("UNC "+value)
-            elif config == 'password':
-                self._ThreadComm.sendMsg("UNP "+value)
-            elif config == 'hash':
-                self._ThreadComm.sendMsg("HSC "+value)
             elif config == 'auto_timeout':
                 self._ThreadComm.sendMsg("ATC "+value)
-            elif config == 'savepw':
-                pass
             else:
-                print "unable "+config
-                    
-    def on_NotasRequested(self):
-        self._ThreadComm.sendMsg("CKN")
+                pass
+        elif eventType == "Login":
+            self._ThreadComm.sendMsg("UNC "+args[0])
+            self._ThreadComm.sendMsg("UNP "+args[1])
+        elif eventType == "ProgramStart":
+            self._ThreadComm.sendMsg("HSC "+args[0])
+            self._ThreadComm.sendMsg("TOC "+args[1])
+            self._ThreadComm.sendMsg("ATC "+args[2])
+        elif eventType == "ProgramExit":
+            self.on_stop()
+        else:
+            print "Warning: Event caught but not recognized '"+eventType+"' in main.py"
 
 if __name__ == '__main__':
     SigmaWeb().run()

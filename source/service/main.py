@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import time, http
+import time, http, random
 
 from kivy.logger import Logger
 from kivy.utils import platform
@@ -22,7 +22,10 @@ class Service():
     _password = ""
     _lastHash = ""
     
-    def run(self):        
+    nome = None
+    
+    def run(self):
+        self.nome = int(random.random()*100)
         Debug().log("Monitor: Started successfully")
         
         #Start ThreadComm
@@ -36,7 +39,7 @@ class Service():
         #Run until SIGTERM
         lastCheck = 0
         while (self._exit==False):
-            Debug().log("Service running...")
+            Debug().log("Service running... "+str(self.nome))
             
             #Check for ThreadComm messages
             message = ThreadComm.recvMsg()

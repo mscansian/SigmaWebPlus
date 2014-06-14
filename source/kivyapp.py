@@ -6,117 +6,64 @@ import kivy.app
 import kivy.config
 import kivy.utils
 import kivy.clock
-import kivy.uix.boxlayout
 
-import layout
 import serverXMLparser
-from service.debug import Debug
+import layout
 
 class KivyApp(kivy.app.App):
-    _GUI = None
+    GUI = None
     
+    #Private variables
     _callback_update = None
-    _callback_configchange = None
-    _callback_programexit = None
-    _callback_notasrequested = None
+    _callback_event = None
     
-    #Kivy app config
-    config_username = None
-    config_password = None
-    config_timeout = None
     
     #Kivy Configuration
     use_kivy_settings = False
-
-    #Custom methods
-    def changeWindow(self, window):
-        self._GUI.change(window)
-        self.root.clear_widgets()
-        self.root.add_widget(self._GUI.getRoot())
     
-    def setCallbacks(self, update, configchange, programExit, notasreq):
+    def setCallback(self, update, event):
         self._callback_update = update
-        self._callback_configchange = configchange
-        self._callback_programexit = programExit
-        self._callback_notasrequested = notasreq
+        self._callback_event = event
     
-    def updateNotas(self, hash, notas):      
+    def updateNotas(self, hash, notas): 
+        print "novas notas"
+        print notas
+             
         #Salva hash e notas
         self.config.set('account', 'lasthash', hash)
         self.config.set('account', 'notas_data', notas)
         self.config.write()
         
-        #Faz um parse do codigo XML para mostrar as notas
-        Aluno = serverXMLparser.alunoXML(notas)
-        
-        #Modifica pagina mostrando as notas
-        try:
-            self._GUI.setNotas(Aluno.materias)
-        except:
-            raise
-    
-    #GUI callbacks
-    def callback_VerifyNotas(self, *args):
-        self._callback_notasrequested()
-    
-    def callback_Configuracoes(self, *args):
-        self.open_settings()
-    
-    def callback_Login(self, *args):
-        if (self._GUI.getLoginMatricula() == "") or (self._GUI.getLoginSenha() == ""):
-            return False
-        
-        #Salva dados no arquivo de configuracao
-        self.config.set('account', 'login', self._GUI.getLoginMatricula())
-        self.config.set('account', 'password', self._GUI.getLoginSenha())
-        self.config.write()
-        
-        #Chama os callbacks de configuracao modificada
-        self.on_config_change(self.config, 'account', 'login', self.config.get('account', 'login'))
-        self.on_config_change(self.config, 'account', 'password', self.config.get('account', 'password'))
-        
-        #Sai da tela Login e vai para a Tela Main
-        self.changeWindow("main")
+        dadosAluno = serverXMLparser.alunoXML(notas) #Faz um parse do codigo XML para mostrar as notas
+        self.GUI.setNotas(dadosAluno.materias, 'Notas carregadas!') #Modifica pagina mostrando as notas
         
     #Override methods
     def build(self):
         #Load GUI
-        self._GUI = layout.GUI()
-        self._GUI.setCallbacks(self.callback_VerifyNotas, self.callback_Configuracoes, self.callback_Login)
+        self.GUI = layout.GUI()
+        self.root = self.GUI.root
         
-        #Schedule update
-        kivy.clock.Clock.schedule_interval(self._callback_update, 0)
-        
-        #Chama os callbacks de configuracao modificada (objetivo aqui eh mandar isso para o service)
-        self._callback_configchange('login', self.config.get('account', 'login'))
-        self._callback_configchange('password', self.config.get('account', 'password'))
-        self._callback_configchange('timeout', self.config.get('account', 'update_time'))
-        self._callback_configchange('hash', self.config.get('account', 'lasthash'))
-        self._callback_configchange('auto_timeout', self.config.get('account', 'update_auto')) #Esse ultimo serve para o Monitor iniciar a busca
-        
-        self.root = kivy.uix.boxlayout.BoxLayout()
-    
+        kivy.clock.Clock.schedule_interval(self._callback_update, 0) #Schedule main update
+         
     def on_start(self):
+        #Hack: Seta o valor da configracao de deletar dados para False
         self.config.set('account', 'delall', '0')
         self.config.write()
         
-        #Seleciona qual janela abrir
-        if self.config.get('account', 'login') == "":
-            self.changeWindow("login")
-        else:
-            self.changeWindow("main")
-            
-            #Carrega notas salvas
-            if not (self.config.get('account', 'lasthash') == ''):
-                self.updateNotas(self.config.get('account', 'lasthash'), self.config.get('account', 'notas_data'))
+        self.GUI.setWindow(layout.screenLogin) #Carrega janela de login
+        self.on_event("Login", self.config.get('account', 'login'), self.config.get('account', 'password')) #Tenta realizar o login
+        self.updateNotas(self.config.get('account', 'lasthash'), self.config.get('account', 'notas_data')) #Carrega notas salvas
+                
+        self.on_event("ProgramStart", self.config.get('account', 'lasthash'), self.config.get('account', 'update_time'), self.config.get('account', 'update_auto'))
         
     def on_stop(self):
-        self._callback_programexit()
+        self.on_event("ProgramExit")
         
     def on_pause(self):
-        if self._GUI.windowname == "login":
+        if self.GUI.getWindow() == layout.screenLogin: #If app is on Login screen, then closes everything
             return False
-        return True
+        else:
+            return True
     
     def on_resume(self):
         pass
@@ -131,25 +78,32 @@ class KivyApp(kivy.app.App):
         settings.add_json_panel('SigmaWeb+', self.config, data=jsondata)
     
     def on_config_change(self, config, section, key, value):
-        print "kivy config change "+key
-        if config is self.config:
-            token = (section, key)
+        self.on_event("ConfigChange", config, section, key, value) #Forward to event handler
+                
+    def on_event(self, eventType, *args):
+        #Deal with the event locally
+        if eventType == "VerificarNotas":
+            pass
+        elif eventType == "Login":
+            matricula = args[0]
+            senha = args[1]
             
-            if token == ('account', 'login'):
-                self._callback_configchange('login', value)
-            elif token == ('account', 'password'):
-                self._callback_configchange('password', value)
-            elif token == ('account', 'update_time'):
-                self._callback_configchange('timeout', value)
-            elif token == ('account', 'update_auto'):
-                self._callback_configchange('auto_timeout', value)
-            elif token == ('account', 'delall'):
-                if value == '1':
-                    self.config.set('account', 'login', '')
-                    self.config.set('account', 'password', '')
-                    self.config.set('account', 'update_time', '60')
-                    self.config.set('account', 'lasthash', '')
-                    self.config.set('account', 'update_auto', '1')
-                    self.config.set('account', 'notas_data', '')
-                    self.config.write()
+            if not ((matricula == "") or (senha=="")):
+                self.config.set('account', 'login', matricula)
+                self.config.set('account', 'password', senha)
+                self.config.write()
+                
+                self.GUI.setWindow(layout.screenMain)
+        elif eventType == "ConfigChange":
+            key = args[2]
+            if key == 'delall':
+                self.config.set('account', 'login', '')
+                self.config.set('account', 'password', '')
+                self.config.write()
                 self.stop()
+        elif eventType == "ProgramExit":
+            pass
+        else:
+            print "Warning: Event caught but not recognized '"+eventType+"' in kivyapp.py"
+        
+        self._callback_event(eventType, *args) #Forward event to the main class
