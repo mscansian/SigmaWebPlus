@@ -29,11 +29,13 @@
 				id: matricula
 				hint_text: "Matricula"
 				input_type: 'number'
+				on_text_validate: senha.focus = True
 			
 			SigmaWebTextInput:
 				id: senha
 				hint_text: "Senha"
 				password: True
+				on_text_validate: app.on_event('Login', matricula.text, senha.text)
 			
 			SigmaWebButton:
 				text: 'Entrar'

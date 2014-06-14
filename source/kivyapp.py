@@ -95,6 +95,8 @@ class KivyApp(kivy.app.App):
         elif eventType == "Logoff":
             self.config.set('account', 'login', '')
             self.config.set('account', 'password', '')
+            self.config.set('account', 'lasthash', '')
+            self.config.set('account', 'notas_data', '')
             self.config.write()
             
             self.GUI.setWindow(layout.screenLogin)
@@ -103,6 +105,8 @@ class KivyApp(kivy.app.App):
             if key == 'delall':
                 self.config.set('account', 'login', '')
                 self.config.set('account', 'password', '')
+                self.config.set('account', 'lasthash', '')
+                self.config.set('account', 'notas_data', '')
                 self.config.write()
                 self.stop()
         elif eventType == "ProgramExit":
