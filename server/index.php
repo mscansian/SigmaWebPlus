@@ -17,8 +17,7 @@
 			$innerHTML .= $element->ownerDocument->saveHTML($child);
 		}
 	
-		return $innerHTML;
-		return preg_replace('/[^(\x20-\x7F)]*/','',$innerHTML);
+		return preg_replace('/[\x00-\x1F\x80-\xFF]/','',$innerHTML);
 	}
 	
 	//Get input data
