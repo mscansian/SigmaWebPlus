@@ -17,6 +17,7 @@
 			$innerHTML .= $element->ownerDocument->saveHTML($child);
 		}
 	
+		return $innerHTML;
 		return preg_replace('/[^(\x20-\x7F)]*/','',$innerHTML);
 	}
 	
@@ -39,7 +40,7 @@
 	else
 	{
 		$HTML = new DOMDocument; @$HTML->loadHTML($response); @$XPATH = new DOMXPath($HTML);
-		$ErrorMsg = $XPATH->query('*/td',$XPATH->query('*/table')->item(1))->item(1)->nodeValue;
+		$ErrorMsg = utf8_decode($XPATH->query('*/td',$XPATH->query('*/table')->item(1))->item(1)->nodeValue);
 			
 		if ($ErrorMsg == "Matrícula e/ou senha inválida")
 		{
