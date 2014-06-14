@@ -25,17 +25,15 @@ class KivyApp(kivy.app.App):
         self._callback_update = update
         self._callback_event = event
     
-    def updateNotas(self, hash, notas): 
-        print "novas notas"
-        print notas
-             
-        #Salva hash e notas
-        self.config.set('account', 'lasthash', hash)
-        self.config.set('account', 'notas_data', notas)
-        self.config.write()
-        
-        dadosAluno = serverXMLparser.alunoXML(notas) #Faz um parse do codigo XML para mostrar as notas
-        self.GUI.setNotas(dadosAluno.materias, 'Notas carregadas!') #Modifica pagina mostrando as notas
+    def updateNotas(self, hash, notas, home):     
+        if not (notas == ""):
+            #Salva hash e notas
+            self.config.set('account', 'lasthash', hash)
+            self.config.set('account', 'notas_data', notas)
+            self.config.write()
+            
+            dadosAluno = serverXMLparser.alunoXML(notas) #Faz um parse do codigo XML para mostrar as notas
+            self.GUI.setNotas(dadosAluno.materias, home) #Modifica pagina mostrando as notas
         
     #Override methods
     def build(self):
@@ -52,7 +50,7 @@ class KivyApp(kivy.app.App):
         
         self.GUI.setWindow(layout.screenLogin) #Carrega janela de login
         self.on_event("Login", self.config.get('account', 'login'), self.config.get('account', 'password')) #Tenta realizar o login
-        self.updateNotas(self.config.get('account', 'lasthash'), self.config.get('account', 'notas_data')) #Carrega notas salvas
+        self.updateNotas(self.config.get('account', 'lasthash'), self.config.get('account', 'notas_data'), "Suas notas estao sendo atualizadas\nAguarde...") #Carrega notas salvas
                 
         self.on_event("ProgramStart", self.config.get('account', 'lasthash'), self.config.get('account', 'update_time'), self.config.get('account', 'update_auto'))
         
@@ -83,7 +81,7 @@ class KivyApp(kivy.app.App):
     def on_event(self, eventType, *args):
         #Deal with the event locally
         if eventType == "VerificarNotas":
-            pass
+            self.updateNotas(self.config.get('account', 'lasthash'), self.config.get('account', 'notas_data'), "Suas notas estao sendo atualizadas\nAguarde...") #Atualiza home
         elif eventType == "Login":
             matricula = args[0]
             senha = args[1]
@@ -94,6 +92,12 @@ class KivyApp(kivy.app.App):
                 self.config.write()
                 
                 self.GUI.setWindow(layout.screenMain)
+        elif eventType == "Logoff":
+            self.config.set('account', 'login', '')
+            self.config.set('account', 'password', '')
+            self.config.write()
+            
+            self.GUI.setWindow(layout.screenLogin)
         elif eventType == "ConfigChange":
             key = args[2]
             if key == 'delall':

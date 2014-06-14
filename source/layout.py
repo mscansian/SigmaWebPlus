@@ -35,11 +35,9 @@ class GUI():
         return self.window.__class__
     
     def setNotas(self, notas, home):
-        print "111"
         if not (self.getWindow() == screenMain):
             return False
         
-        print "vat"
         self.window.paineis.clear_widgets() #Deleta os paineis antigos
         
         #Adiciona novamente a Home

@@ -22,10 +22,7 @@ class Service():
     _password = ""
     _lastHash = ""
     
-    nome = None
-    
     def run(self):
-        self.nome = int(random.random()*100)
         Debug().log("Monitor: Started successfully")
         
         #Start ThreadComm
@@ -39,7 +36,6 @@ class Service():
         #Run until SIGTERM
         lastCheck = 0
         while (self._exit==False):
-            Debug().log("Service running... "+str(self.nome))
             
             #Check for ThreadComm messages
             message = ThreadComm.recvMsg()
@@ -66,18 +62,22 @@ class Service():
             if not ((self._username == "") or (self._password == "") or (self._verifyAuto == 0)):
                 if (lastCheck + (self._verifyTimeout*60)) < time.time():
                     try:
-                        print "Checking..."
+                        print "Debug: Fetching data from server..."
                         response = ""
                         Pagina = http.Page("http://www.sigmawebplus.com.br/server/")
                         Pagina.set_RequestHeaders(http.Header("username", self._username), http.Header("password", self._password), http.Header("hash", self._lastHash))
                         Pagina.Refresh()
                         response = Pagina.get_ResponseData()
                     except:
-                        pass
+                        print "Warning: Failed to fetch data from server"
                     
                     #Avalia resposta
-                    if not (response[:10] == "Up-to-date"):
-                        
+                    if response[:7] == "<error>":
+                        print "Warning: Server returned an error '"+response[7:-8]+"'"
+                        ThreadComm.sendMsg("ERR "+response[7:-8])
+                    elif response[:10] == "Up-to-date":
+                        print "Debug: Data is up-to-date"
+                    else:
                         #Se nao for a primeira vez que esta sendo feita a busca, joga uma notificacao
                         if self._lastHash <> "":
                             Notification("SigmaWeb+","Novas notas disponiveis!").notify()
@@ -86,12 +86,15 @@ class Service():
                         self._lastHash = response[:32]
                         
                         #Manda as informacoes para o App exibir na tela
-                        ThreadComm.sendMsg("NNA "+response)
+                        try:
+                            ThreadComm.sendMsg("NNA "+response)
+                        except:
+                            print "Warning: Unable to send new data to main.py in service/main.py"
                         
                     
                     lastCheck = time.time()
 
-            time.sleep(1)
+            time.sleep(0.01)
         
         Debug().log("Monitor: Killed successfully")
     

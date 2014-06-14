@@ -63,9 +63,11 @@ class SigmaWeb:
                 notas = message[(32+5):]
                 
                 #Manda as notas para a aplicacao kivy
-                self.kivy.updateNotas(hash, notas)
-            elif message[:3] == "UPW": #Usuario ou matricula errado
-                pass
+                self.kivy.updateNotas(hash, notas, 'Deslize para ver as notas')
+            elif message[:3] == "ERR": #Erro no servidor
+                print "*"+message[4:]+"*"
+                if message[4:] == "Auth error":
+                    self.kivy.on_event("Logoff") #Log user off
         
     def on_event(self, eventType, *args):
         if eventType == "VerificarNotas":
@@ -82,6 +84,9 @@ class SigmaWeb:
         elif eventType == "Login":
             self._ThreadComm.sendMsg("UNC "+args[0])
             self._ThreadComm.sendMsg("UNP "+args[1])
+        elif eventType == "Logoff":
+            self._ThreadComm.sendMsg("UNC ")
+            self._ThreadComm.sendMsg("UNP ")
         elif eventType == "ProgramStart":
             self._ThreadComm.sendMsg("HSC "+args[0])
             self._ThreadComm.sendMsg("TOC "+args[1])
