@@ -14,5 +14,14 @@
 		"desc": "Intervalo em minutos que as notas serao atualizadas",
 		"section": "account",
 		"key": "update_time"
+	},
+	
+	{
+		"type": "bool",
+		"title": "Deletar meus dados pessoais",
+		"desc": "Deletar seus dados pessoais e sair do app",
+		"section": "account",
+		"key": "delall",
+		"true": "1" 
 	}
 ]

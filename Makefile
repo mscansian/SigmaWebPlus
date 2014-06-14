@@ -9,7 +9,7 @@ PIP := $(VENV)/bin/pip
 # Python for Android settings
 PYTHON_FOR_ANDROID := $(WD)/python-for-android
 PYTHON_FOR_ANDROID_PACKAGE := $(PYTHON_FOR_ANDROID)/dist/default
-PY4A_MODULES := "plyer openssl pyjnius kivy"
+PY4A_MODULES := "plyer openssl pyjnius kivy lxml"
 
 # Android SDK setting
 

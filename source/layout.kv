@@ -1,0 +1,80 @@
+<SigmaWebLogo@Image>
+	size_hint: 1, 0.3
+	source: 'res/logo.png'
+	canvas.before:
+        Color:
+            rgb: 0,0,0, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<SigmaWebTextInput@TextInput>
+	multiline: False
+	font_size: 15
+
+<SigmaWebButton@Button>
+	background_color: 0.55, 0.55, 0.55, 1
+
+<screenLogin>
+	BoxLayout:
+		orientation: 'vertical'
+		
+		SigmaWebLogo:
+		
+		BoxLayout:
+			orientation: 'vertical'
+			size_hint: 1, .5
+			
+			SigmaWebTextInput:
+				id: matricula
+				hint_text: "Matricula"
+				input_type: 'number'
+			
+			SigmaWebTextInput:
+				id: senha
+				hint_text: "Senha"
+				password: True
+			
+			SigmaWebButton:
+				text: 'Entrar'
+				on_press: app.on_event('Login', matricula.text, senha.text)
+
+<SigmaWebPageHeader@Button>:
+	size_hint: 1, 0.15
+	background_color: 0.88, 0.88, 0.88, 1
+    background_down: self.background_normal
+
+<SigmaWebPage@BoxLayout>
+	orientation: 'vertical'
+	header: obj_header
+	content: obj_content
+	
+	SigmaWebPageHeader:
+		id: obj_header
+		text: 'Home'
+		
+	Label:
+		id: obj_content
+		text: 'Suas notas estão sendo carregadas\n\nAguarde...'
+
+<SigmaWebPage@BoxLayout>
+	orientation: 'vertical'
+
+<screenMain>
+	paineis: obj_paineis
+	
+	BoxLayout:
+		orientation: 'vertical'
+		
+		SigmaWebLogo:
+		
+		Carousel:
+			id: obj_paineis
+			direction: 'right'
+				
+			SigmaWebPage:
+			
+		SigmaWebButton:
+			size_hint: 1, .2
+			text: 'Verificar notas agora'
+			on_press: app.on_event('VerificarNotas')
