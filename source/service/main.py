@@ -77,6 +77,7 @@ class Service():
                         ThreadComm.sendMsg("ERR "+response[7:-8])
                     elif response[:10] == "Up-to-date":
                         print "Debug: Data is up-to-date"
+                        ThreadComm.sendMsg("UTD ")
                     else:
                         #Se nao for a primeira vez que esta sendo feita a busca, joga uma notificacao
                         if self._lastHash <> "":

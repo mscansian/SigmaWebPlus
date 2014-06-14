@@ -3,6 +3,7 @@
 
 from kivy.utils import platform
 from kivyapp import KivyApp
+import time
 
 class SigmaWeb:
     _singleinstance = None
@@ -63,7 +64,9 @@ class SigmaWeb:
                 notas = message[(32+5):]
                 
                 #Manda as notas para a aplicacao kivy
-                self.kivy.updateNotas(hash, notas, 'Deslize para ver as notas')
+                self.kivy.updateNotas(hash, notas, 'Novas notas disponiveis!\n\nAtualizado em: '+time.strftime("%x %X")+'\n\n\nDeslize para visualizar')
+            elif message[:3] == "UTD":
+                self.kivy.updateNotas('', '', '\n\nAtualizado em: '+time.strftime("%x %X")+'\n\n\nDeslize para visualizar')
             elif message[:3] == "ERR": #Erro no servidor
                 print "*"+message[4:]+"*"
                 if message[4:] == "Auth error":

@@ -26,7 +26,11 @@ class KivyApp(kivy.app.App):
         self._callback_event = event
     
     def updateNotas(self, hash, notas, home):     
-        if not (notas == ""):
+        if notas == "":
+            hash = self.config.get('account', 'lasthash')
+            notas = self.config.get('account', 'notas_data')
+        
+        if not (notas==""):
             #Salva hash e notas
             self.config.set('account', 'lasthash', hash)
             self.config.set('account', 'notas_data', notas)
