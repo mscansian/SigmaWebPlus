@@ -17,15 +17,16 @@ PY4A_MODULES := "plyer openssl pyjnius kivy lxml"
 # Android settings
 APK_PACKAGE := org.drpexe.sigmawebplus
 APP_NAME := "SigmaWeb+"
-APK_NAME := SigmaWebPlus
-APK_VERSION := 0.1
+APK_NAME := SigmaWeb+
+APK_VERSION := "0.2"
 APK_ORIENTATION := portrait
 APK_ICON := $(PROJECT_DIR)/res/udesc.png
 APK_PRESPLASH := $(PROJECT_DIR)/res/udesc_background.png
 APK_DEBUG := $(PYTHON_FOR_ANDROID_PACKAGE)/bin/$(APK_NAME)-$(APK_VERSION)-debug.apk
 APK_RELEASE := $(PYTHON_FOR_ANDROID_PACKAGE)/bin/$(APK_NAME)-$(APK_VERSION)-release-unsigned.apk
-APK_FINAL := $(PYTHON_FOR_ANDROID_PACKAGE)/bin/$(APK_NAME).apk
-APK_ALIAS := sigmaplus
+APK_FINAL := $(WD)/release/$(APK_NAME).apk
+APK_KEYSTORE := ~/Dropbox/Pessoal/Backup/Android-Keys/org-drpexe-sigmawebplus-release-key.keystore
+APK_ALIAS := sigmawebplus
 APK_PERMISSIONS = --permission INTERNET
 
 # Run
@@ -91,3 +92,17 @@ createdist:
 
 .PHONY: install
 install: distclean install_venv install_pipmodules install_pythonforandroid createdist
+
+.PHONY: android_release
+android_release:
+	source env_var.sh; \
+	cd $(PYTHON_FOR_ANDROID_PACKAGE); \
+	$(PY) ./build.py --package $(APK_PACKAGE) --name $(APP_NAME) --version $(APK_VERSION) --orientation $(APK_ORIENTATION) --icon $(APK_ICON) --presplash $(APK_PRESPLASH) --dir $(PROJECT_DIR) $(APK_PERMISSIONS) release
+	make sign_android
+
+.PHONY: sign_android
+sign_android:
+	rm -f $(APK_FINAL)
+	jarsigner -verbose -sigalg MD5withRSA -digestalg SHA1 -keystore $(APK_KEYSTORE) $(APK_RELEASE) $(APK_ALIAS)
+	source env_var.sh; \
+	zipalign -v 4 $(APK_RELEASE) $(APK_FINAL)

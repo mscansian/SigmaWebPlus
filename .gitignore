@@ -1,6 +1,7 @@
 #Project
 python-for-android
 venv
+release
 
 #Eclipse
 .deps
