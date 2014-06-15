@@ -24,7 +24,7 @@ class ServiceLaucher():
                 self.service = Service()
                 
                 self.thread = threading.Thread(target=self.service.run)
-                self.thread.daemon = True
+                self.thread.daemon = False
                 self.thread.name = "Service"
                 self.thread.start()
             except:

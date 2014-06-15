@@ -25,12 +25,34 @@ class SigmaWeb:
         if platform <> 'android':
             self.singleInstance = SingleInstance(50363, False)
         
+        #Load ThreadComm and check if service is running
+        dadoNotas = None
+        self.threadComm = ThreadComm(51352, "sigmawebplus", ThreadCommClient)
+        try:
+            self.threadComm.start()
+        except ThreadCommException:
+            pass #Service is not running, keep going
+        else:
+            #Service is running. Get all info from server and ask to shutdown
+            self.threadComm.sendMsg("KIL")
+            while True:
+                try:
+                    message = self.threadComm.recvMsg()
+                except ThreadCommException:
+                    pass
+                else:
+                    if message[:3] == "SH2":
+                        dadoNotas = dadoNotas + [message[4:(32+4)], message[(32+5):]]
+                    elif message[:3] == "SH1":
+                        dadoNotas = [message[4:]]
+                    elif message == "CLS":
+                        break
+        
         #Load Service
         self.service = ServiceLaucher()
         
-        #Load Threadcomm
+        #Connect Threadcomm
         Connected = False
-        self.threadComm = ThreadComm(51353, "sigmawebplus", ThreadCommClient)
         while not Connected:
             try:
                 self.threadComm.start()
@@ -42,6 +64,7 @@ class SigmaWeb:
         #Load and start kivy
         self.kivy = KivyApp()
         self.kivy.setCallback(self.update, self.on_event)
+        self.kivy.nextUpdate = dadoNotas
         self.kivy.run()
         
     
@@ -49,13 +72,11 @@ class SigmaWeb:
         if platform <> 'android':
             self.singleInstance.kill()
         self.threadComm.stop()
-        self.service.kill(force=True)
+        #self.service.kill(force=True)
     
     def update(self, *args):
         try:
             message = self.threadComm.recvMsg()
-            print message+"*"
-            print message[:3]
         except ThreadCommException as e:
             pass
         else:
@@ -69,7 +90,6 @@ class SigmaWeb:
             elif message[:3] == "UTD":
                 self.kivy.updateNotas('', '', '\n\nAtualizado em: '+time.strftime("%x %X")+'\n\n\nDeslize para visualizar')
             elif message[:3] == "ERR": #Erro no servidor
-                print "*"+message[4:]+"*"
                 if message[4:] == "Auth error":
                     self.kivy.on_event("Logoff") #Log user off
         
@@ -79,9 +99,9 @@ class SigmaWeb:
         elif eventType == "ConfigChange":
             config = args[2]
             value = args[3]
-            if config == 'timeout':
+            if config == 'update_time':
                 self.threadComm.sendMsg("TOC "+value)
-            elif config == 'auto_timeout':
+            elif config == 'update_auto':
                 self.threadComm.sendMsg("ATC "+value)
             else:
                 pass
@@ -92,9 +112,10 @@ class SigmaWeb:
             self.threadComm.sendMsg("UNC ")
             self.threadComm.sendMsg("UNP ")
         elif eventType == "ProgramStart":
-            self.threadComm.sendMsg("HSC "+args[0])
-            self.threadComm.sendMsg("TOC "+args[1])
-            self.threadComm.sendMsg("ATC "+args[2])
+            self.threadComm.sendMsg("LCK "+args[0])
+            self.threadComm.sendMsg("HSC "+args[1])
+            self.threadComm.sendMsg("TOC "+args[2])
+            self.threadComm.sendMsg("ATC "+args[3])
         elif eventType == "ProgramExit":
             self.on_stop()
         else:

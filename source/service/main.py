@@ -3,105 +3,164 @@
 
 import time, http, random
 
-from kivy.logger import Logger
 from kivy.utils import platform
 from notification_demo.components.notification import Notification
-from threadcomm import threadcomm
+from threadcomm.threadcomm import ThreadComm, ThreadCommServer
 
-
-if platform <> "android":
-    from service.debug import Debug
-else:
-    from debug import Debug
 
 class Service():
-    _exit = False
+    #Objects
+    threadComm = None
+    sigmaWeb = None
     
-    _verifyTimeout = 0 #Minutes
-    _verifyAuto = 0
-    _username = ""
-    _password = ""
-    _lastHash = ""
+    #Signals
+    _SIGTERM = False
+    
+    #Configuration
+    verifyTimeout = None #Seconds
+    verifyAuto = False
+    lastCheck = 0
     
     def run(self):
-        Debug().log("Monitor: Started successfully")
+        print "Monitor: Started successfully"
         
         #Start ThreadComm
-        ThreadComm = threadcomm.ThreadComm(51353, "sigmawebplus", threadcomm.ThreadCommServer)
-        ThreadComm.start()
+        self.threadComm = ThreadComm(51352, "sigmawebplus", ThreadCommServer)
+        self.threadComm.start()
+        
+        #Start SigmaWebMonitor
+        self.sigmaWeb = SigmaWebMonitor()
         
         #Run until SIGTERM
-        lastCheck = 0
-        while (self._exit==False):
+        while (self._SIGTERM==False):
+            #Listen and respond to ThreadComm messages
+            self.listen()
             
-            #Check for ThreadComm messages
-            try:
-                message = ThreadComm.recvMsg()
-            except:
-                pass
-            else:
-                print "-------------Service RCV: "+message
-                if message[:3] == "TOC": #Timeout change
-                    self._verifyTimeout = float(message[4:])
-                elif message[:3] == "ATC": #Auto check
-                    self._verifyAuto = message[4:]
-                elif message[:3] == "CKN": #Check now
-                    lastCheck = 0
-                elif message[:3] == "KIL": #Kill
-                    self._exit = True
-                elif message[:3] == "SNT": #Send notification
-                    Notification("SigmaWeb+",message[4:]).notify()
-                elif message[:3] == "UNC": #Username change
-                    self._username = message[4:]  
-                elif message[:3] == "UNP": #Password change
-                    self._password = message[4:]
-                elif message[:3] == "HSC": #Hash change
-                    self._lastHash = message[4:]
-            
-            #If timeout expired, check for new notes
-            if not ((self._username == "") or (self._password == "") or (self._verifyAuto == 0)):
-                if (lastCheck + (self._verifyTimeout*60)) < time.time():
+            #Verifica por novas notas no sistema
+            if self.verifyAuto and self.sigmaWeb.enoughInfo(): #Checka se o monitor esta autorizado a verificar notas e o SigmaWebMonitor tem informacoes suficientes
+                if (self.lastCheck + self.verifyTimeout) < time.time():                    
                     try:
                         print "Debug: Fetching data from server..."
-                        response = ""
-                        Pagina = http.Page("http://www.sigmawebplus.com.br/server/")
-                        Pagina.set_RequestHeaders(http.Header("username", self._username), http.Header("password", self._password), http.Header("hash", self._lastHash))
-                        Pagina.Refresh()
-                        response = Pagina.get_ResponseData()
-                    except:
-                        print "Warning: Failed to fetch data from server"
-                    
-                    #Avalia resposta
-                    if response[:7] == "<error>":
-                        print "Warning: Server returned an error '"+response[7:-8]+"'"
-                        ThreadComm.sendMsg("ERR "+response[7:-8])
-                    elif response[:10] == "Up-to-date":
-                        print "Debug: Data is up-to-date"
-                        ThreadComm.sendMsg("UTD ")
+                        notification, response = self.sigmaWeb.check()
+                    except SigmaWebMonitorException as e:
+                        if str(e)[1:15] == "Server error: ":
+                            self.threadComm.sendMsg("ERR "+str(e)[15:-1])
+                        elif str(e)  == "'Data is already up to date'":
+                            self.threadComm.sendMsg("UTD ")
+                        elif str(e) == "'Unable to fetch data from server'":
+                            print "Monitor: Unable to fetch data from server"
+                        else:
+                            raise
                     else:
-                        #Se nao for a primeira vez que esta sendo feita a busca, joga uma notificacao
-                        if self._lastHash <> "":
+                        self.threadComm.sendMsg("NNA "+response)
+                        
+                        if notification:
                             Notification("SigmaWeb+","Novas notas disponiveis!").notify()
-                        
-                        #Salva a nova hash
-                        self._lastHash = response[:32]
-                        
-                        #Manda as informacoes para o App exibir na tela
-                        try:
-                            print "Send"
-                            ThreadComm.sendMsg("NNA "+response)
-                        except:
-                            print "Warning: Unable to send new data to main.py in service/main.py"
-                        
-                    
-                    lastCheck = time.time()
-
+                    self.lastCheck = time.time()
+            
             time.sleep(1)
         
-        Debug().log("Monitor: Killed successfully")
+        self.threadComm.sendMsg("CLS")
+        self.threadComm.stop()
+        print "Monitor: Killed successfully"
     
     def kill(self):
-        self._exit = True
+        self._SIGTERM = True
+    
+    def listen(self):
+        #Check for ThreadComm messages
+        try:
+            message = self.threadComm.recvMsg()
+        except:
+            return False
+        
+        print message
+        if message[:3] == "TOC": #Timeout change
+            self.verifyTimeout = float(message[4:]) * 60
+        elif message[:3] == "ATC": #Auto check
+            self.verifyAuto = (message[4:] == "1")
+        elif message[:3] == "CKN": #Check now
+            self.lastCheck = 0
+        elif message[:3] == "KIL": #Kill
+            self.threadComm.sendMsg("SH1 "+str(self.lastCheck))
+            self.threadComm.sendMsg("SH2 "+self.sigmaWeb.getData())
+            self._SIGTERM = True
+        elif message[:3] == "SNT": #Send notification
+            Notification("SigmaWeb+",message[4:]).notify()
+        elif message[:3] == "UNC": #Username change
+            self.sigmaWeb.setUsername(message[4:])
+            self.lastCheck = 0  
+        elif message[:3] == "UNP": #Password change
+            self.sigmaWeb.setPassword(message[4:])
+            self.lastCheck = 0
+        elif message[:3] == "HSC": #Hash change
+            self.sigmaWeb.setHash(message[4:])
+            self.lastCheck = 0
+        elif message[:3] == "LCK": #Hash change
+            self.lastCheck = float(message[4:])
+            print self.lastCheck
+            print time.time()
+        return True
+        
+class SigmaWebMonitor:
+    username = None
+    password = None
+    hash = None
+    data = None
+    
+    def check(self):
+        if not self.enoughInfo():
+            raise SigmaWebMonitorException("Not enough data to fetch information from server")
+        
+        try:
+            pagina = http.Page("http://www.sigmawebplus.com.br/server/")
+            pagina.set_RequestHeaders(http.Header("username", self.username), http.Header("password", self.password), http.Header("hash", self.hash))
+            pagina.Refresh()
+            response = pagina.get_ResponseData()
+        except:
+            raise SigmaWebMonitorException("Unable to fetch data from server")
+        
+        #Avalia a resposta
+        if response[:7] == "<error>":
+            raise SigmaWebMonitorException("Server error: "+response[7:-8])
+        elif response[:10] == "Up-to-date":
+            raise SigmaWebMonitorException("Data is already up to date")
+        
+        notification = not (self.hash == "")
+        self.hash = response[:32]
+        self.data = response
+        return notification, response
+    
+    def enoughInfo(self):
+        if (self.username == None) or (self.password==None) or (self.hash==None):
+            return False
+        else:
+            return True
+            
+    
+    def setUsername(self, username):
+        if not (username == ""):
+            self.username = username
+    
+    def setPassword(self, password):
+        if not (password==""):
+            self.password = password
+    
+    def setHash(self, hash):
+        self.hash = hash
+        
+    def getData(self):
+        if not (self.data == None):
+            return self.data
+        return ""
+        
+class SigmaWebMonitorException(Exception):
+    def __init__(self, value):
+        self.value = value
+    
+    def __str__(self):
+        return repr(self.value)            
+        
 
 if __name__ == '__main__':
     #On Android platform this code is executed automaticaly

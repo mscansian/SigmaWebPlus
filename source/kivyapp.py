@@ -17,6 +17,8 @@ class KivyApp(kivy.app.App):
     _callback_update = None
     _callback_event = None
     
+    nextUpdate = None
+    
     
     #Kivy Configuration
     use_kivy_settings = False
@@ -27,13 +29,13 @@ class KivyApp(kivy.app.App):
     
     def updateNotas(self, hash, notas, home):     
         if notas == "":
-            hash = self.config.get('account', 'lasthash')
-            notas = self.config.get('account', 'notas_data')
+            hash = self.config.get('account', 'update_hash')
+            notas = self.config.get('account', 'update_data')
         
         if not (notas==""):
             #Salva hash e notas
-            self.config.set('account', 'lasthash', hash)
-            self.config.set('account', 'notas_data', notas)
+            self.config.set('account', 'update_hash', hash)
+            self.config.set('account', 'update_data', notas)
             self.config.write()
             
             dadosAluno = serverXMLparser.alunoXML(notas) #Faz um parse do codigo XML para mostrar as notas
@@ -49,14 +51,20 @@ class KivyApp(kivy.app.App):
          
     def on_start(self):
         #Hack: Seta o valor da configracao de deletar dados para False
-        self.config.set('account', 'delall', '0')
+        self.config.set('account', 'app_delete', '0')
         self.config.write()
+        
+        #Atualiza notas de acordo com config
+        if not (self.nextUpdate == None):
+            self.config.set('account', 'update_time', self.nextUpdate[0])
+            self.config.set('account', 'update_hash', self.nextUpdate[1])
+            self.config.set('account', 'update_data', self.nextUpdate[2])
         
         self.GUI.setWindow(layout.screenLogin) #Carrega janela de login
         self.on_event("Login", self.config.get('account', 'login'), self.config.get('account', 'password')) #Tenta realizar o login
-        self.updateNotas(self.config.get('account', 'lasthash'), self.config.get('account', 'notas_data'), "Suas notas estao sendo atualizadas\nAguarde...") #Carrega notas salvas
+        self.updateNotas(self.config.get('account', 'update_hash'), self.config.get('account', 'update_data'), "Suas notas estao sendo atualizadas\nAguarde...") #Carrega notas salvas
                 
-        self.on_event("ProgramStart", self.config.get('account', 'lasthash'), self.config.get('account', 'update_time'), self.config.get('account', 'update_auto'))
+        self.on_event("ProgramStart", self.config.get('account', 'update_time'), self.config.get('account', 'update_hash'), self.config.get('account', 'update_timeout'), self.config.get('account', 'update_auto'))
         
     def on_stop(self):
         self.on_event("ProgramExit")
@@ -71,7 +79,7 @@ class KivyApp(kivy.app.App):
         pass
     
     def build_config(self, config):
-        config.setdefaults('account', {'login': '','password': '', 'update_time': '60', 'lasthash': '', 'update_auto': '1', 'notas_data': '', 'delall': '0'})
+        config.setdefaults('account', {'login': '','password': '', 'update_timeout': '60', 'update_time': '0', 'update_hash': '', 'update_auto': '1', 'update_data': '', 'app_delete': '0'})
         kivy.Config.set('kivy', 'exit_on_escape', 0)
         kivy.Config.set('kivy', 'log_enable', 0)
     
@@ -85,7 +93,7 @@ class KivyApp(kivy.app.App):
     def on_event(self, eventType, *args):
         #Deal with the event locally
         if eventType == "VerificarNotas":
-            self.updateNotas(self.config.get('account', 'lasthash'), self.config.get('account', 'notas_data'), "Suas notas estao sendo atualizadas\nAguarde...") #Atualiza home
+            self.updateNotas(self.config.get('account', 'update_hash'), self.config.get('account', 'update_data'), "Suas notas estao sendo atualizadas\nAguarde...") #Atualiza home
         elif eventType == "Login":
             matricula = args[0]
             senha = args[1]
@@ -99,18 +107,20 @@ class KivyApp(kivy.app.App):
         elif eventType == "Logoff":
             self.config.set('account', 'login', '')
             self.config.set('account', 'password', '')
-            self.config.set('account', 'lasthash', '')
-            self.config.set('account', 'notas_data', '')
+            self.config.set('account', 'update_hash', '')
+            self.config.set('account', 'update_time', '0')
+            self.config.set('account', 'update_data', '')
             self.config.write()
             
             self.GUI.setWindow(layout.screenLogin)
         elif eventType == "ConfigChange":
             key = args[2]
-            if key == 'delall':
+            if key == 'app_delete':
                 self.config.set('account', 'login', '')
                 self.config.set('account', 'password', '')
-                self.config.set('account', 'lasthash', '')
-                self.config.set('account', 'notas_data', '')
+                self.config.set('account', 'update_hash', '')
+                self.config.set('account', 'update_time', '')
+                self.config.set('account', 'update_data', '')
                 self.config.write()
                 self.stop()
         elif eventType == "ProgramExit":
