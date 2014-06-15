@@ -6,6 +6,7 @@ import time, http, random
 from kivy.logger import Logger
 from kivy.utils import platform
 from notification_demo.components.notification import Notification
+from threadcomm import threadcomm
 
 
 if platform <> "android":
@@ -26,21 +27,20 @@ class Service():
         Debug().log("Monitor: Started successfully")
         
         #Start ThreadComm
-        try:
-            from threadcomm import threadcomm
-            ThreadComm = threadcomm.ThreadComm(51352, "sigmawebplus")
-            ThreadComm.waitConnected()
-        except threadcomm.ThreadCommException as e:
-            sys.exit(e.value)
+        ThreadComm = threadcomm.ThreadComm(51353, "sigmawebplus", threadcomm.ThreadCommServer)
+        ThreadComm.start()
         
         #Run until SIGTERM
         lastCheck = 0
         while (self._exit==False):
             
             #Check for ThreadComm messages
-            message = ThreadComm.recvMsg()
-            if message <> None:
-                print "Service RCV: "+message
+            try:
+                message = ThreadComm.recvMsg()
+            except:
+                pass
+            else:
+                print "-------------Service RCV: "+message
                 if message[:3] == "TOC": #Timeout change
                     self._verifyTimeout = float(message[4:])
                 elif message[:3] == "ATC": #Auto check
@@ -88,6 +88,7 @@ class Service():
                         
                         #Manda as informacoes para o App exibir na tela
                         try:
+                            print "Send"
                             ThreadComm.sendMsg("NNA "+response)
                         except:
                             print "Warning: Unable to send new data to main.py in service/main.py"
@@ -95,7 +96,7 @@ class Service():
                     
                     lastCheck = time.time()
 
-            time.sleep(0.01)
+            time.sleep(1)
         
         Debug().log("Monitor: Killed successfully")
     

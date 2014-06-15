@@ -1,15 +1,18 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import time
 from kivy.utils import platform
 from kivyapp import KivyApp
-import time
+from service import ServiceLaucher
+from service.threadcomm.threadcomm import ThreadComm, ThreadCommException, ThreadCommClient
+from singleinstance.singleinstance import SingleInstance 
 
 class SigmaWeb:
-    _singleinstance = None
+    singleInstance = None
     kivy = None
-    _ThreadComm = None
-    _Service = None
+    threadComm = None
+    service = None
     
     def __init__(self):
         pass
@@ -20,28 +23,21 @@ class SigmaWeb:
     def on_start(self):
         #Creates a handle for SingleInstance (this is not necessary on Android 'cause the OS takes care of this!
         if platform <> 'android':
-            try:
-                from singleinstance import singleinstance
-                self._singleinstance = singleinstance.SingleInstance(50362, False)
-            except singleinstance.SingleInstanceException as e:
-                raise
-        
-        #Load Threadcomm
-        try:
-            from service.threadcomm import threadcomm
-            self._ThreadComm = threadcomm.ThreadComm(51352, "sigmawebplus")
-            self._ThreadComm.waitReady()
-        except threadcomm.ThreadCommException as e:
-            raise
+            self.singleInstance = SingleInstance(50363, False)
         
         #Load Service
-        import service
-        try:
-            self._Service = service.ServiceLaucher()
-            self._ThreadComm.waitConnected()
-            print self._ThreadComm.mode
-        except:
-            raise #your hands
+        self.service = ServiceLaucher()
+        
+        #Load Threadcomm
+        Connected = False
+        self.threadComm = ThreadComm(51353, "sigmawebplus", ThreadCommClient)
+        while not Connected:
+            try:
+                self.threadComm.start()
+            except ThreadCommException:
+                pass
+            else:
+                Connected = True
         
         #Load and start kivy
         self.kivy = KivyApp()
@@ -51,13 +47,18 @@ class SigmaWeb:
     
     def on_stop(self):
         if platform <> 'android':
-            self._singleinstance.kill()
-        self._ThreadComm.kill()
-        self._Service.kill(force=True)
+            self.singleInstance.kill()
+        self.threadComm.stop()
+        self.service.kill(force=True)
     
     def update(self, *args):
-        message = self._ThreadComm.recvMsg()
-        if message <> None:
+        try:
+            message = self.threadComm.recvMsg()
+            print message+"*"
+            print message[:3]
+        except ThreadCommException as e:
+            pass
+        else:
             if message[:3] == "NNA": #New Notas Available
                 #Separa notas e Hash
                 hash = message[4:(32+4)]
@@ -74,26 +75,26 @@ class SigmaWeb:
         
     def on_event(self, eventType, *args):
         if eventType == "VerificarNotas":
-            self._ThreadComm.sendMsg("CKN")
+            self.threadComm.sendMsg("CKN")
         elif eventType == "ConfigChange":
             config = args[2]
             value = args[3]
             if config == 'timeout':
-                self._ThreadComm.sendMsg("TOC "+value)
+                self.threadComm.sendMsg("TOC "+value)
             elif config == 'auto_timeout':
-                self._ThreadComm.sendMsg("ATC "+value)
+                self.threadComm.sendMsg("ATC "+value)
             else:
                 pass
         elif eventType == "Login":
-            self._ThreadComm.sendMsg("UNC "+args[0])
-            self._ThreadComm.sendMsg("UNP "+args[1])
+            self.threadComm.sendMsg("UNC "+args[0])
+            self.threadComm.sendMsg("UNP "+args[1])
         elif eventType == "Logoff":
-            self._ThreadComm.sendMsg("UNC ")
-            self._ThreadComm.sendMsg("UNP ")
+            self.threadComm.sendMsg("UNC ")
+            self.threadComm.sendMsg("UNP ")
         elif eventType == "ProgramStart":
-            self._ThreadComm.sendMsg("HSC "+args[0])
-            self._ThreadComm.sendMsg("TOC "+args[1])
-            self._ThreadComm.sendMsg("ATC "+args[2])
+            self.threadComm.sendMsg("HSC "+args[0])
+            self.threadComm.sendMsg("TOC "+args[1])
+            self.threadComm.sendMsg("ATC "+args[2])
         elif eventType == "ProgramExit":
             self.on_stop()
         else:
