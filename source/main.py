@@ -94,11 +94,10 @@ class SigmaWeb:
     ''   APP FINALIZATION
     '''
     
-    def on_stop(self):
-        if platform <> 'android':
-            self.singleInstance.kill()
+    def on_stop(self, shutdownService):
+        if platform <> 'android': self.singleInstance.kill()
         self.threadComm.stop()
-        #self.service.kill(force=True)
+        if shutdownService: self.service.kill(force=True)
     
     '''
     ''   MAIN UPDATE
@@ -144,6 +143,7 @@ class SigmaWeb:
             self.threadComm.sendMsg("ATC "+str(value))
         elif (key == 'app_delete') and (value =='1'):
             self.kivy.stop()
+            self.service.kill(force=True)
     
     def on_event_login(self, *args):
         self.threadComm.sendMsg("UNC "+args[0])
@@ -158,11 +158,12 @@ class SigmaWeb:
         time, hash, data, timeout, auto = args
         self.threadComm.sendMsg("LCK "+time)
         self.threadComm.sendMsg("HSC "+hash)
+        self.threadComm.sendMsg("SUD "+hash.rjust(32)+"\n"+data)
         self.threadComm.sendMsg("TOC "+timeout)
         self.threadComm.sendMsg("ATC "+auto)
     
     def on_event_append(self, *args):
-        self.on_stop()    
+        self.on_stop(*args)    
 
 if __name__ == '__main__':
     SigmaWeb().run()

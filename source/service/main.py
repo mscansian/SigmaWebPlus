@@ -30,7 +30,7 @@ class Service():
                 }
     
     def run(self):
-        print "Monitor: Started successfully"
+        #print "Monitor: Started successfully"
         
         #Start ThreadComm
         self.threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommServer)
@@ -54,28 +54,32 @@ class Service():
             time.sleep(1)
         
         #Stop service
-        self.threadComm.sendMsg("DIE") #Warn app that the service is closing!
+        try: self.threadComm.sendMsg("DIE") #Warn app that the service is closing!
+        except: print "Service: Could not send DIE message to app"
         self.threadComm.stop()
-        print "Monitor: Killed successfully"
+        #print "Monitor: Killed successfully"
     
     def kill(self):
         self.SIGTERM = True
     
     def check(self):
         try:
-            print "Debug: Fetching data from server..."
+            #print "Debug: Fetching data from server..."
             fireNotification, serverResponse = self.sigmaWeb.check()
         except SigmaWebMonitorException as e:
             if str(e)[1:15] == "Server error: ":
-                self.threadComm.sendMsg("ERR "+str(e)[15:-1])
+                try: self.threadComm.sendMsg("ERR "+str(e)[15:-1])
+                except: pass
             elif str(e)  == "'Data is already up to date'":
-                self.threadComm.sendMsg("UTD "+str(self.userData['update_time']))
+                try: self.threadComm.sendMsg("UTD "+str(self.userData['update_time']))
+                except: pass
             elif str(e) == "'Unable to fetch data from server'":
-                print "Monitor: Unable to fetch data from server"
+                print "Service: Unable to fetch data from server"
             else:
                 raise
         else:
-            self.threadComm.sendMsg("NNA "+str(self.userData['update_time'])+serverResponse)
+            try: self.threadComm.sendMsg("NNA "+str(self.userData['update_time'])+serverResponse)
+            except: pass
             
             if fireNotification:
                 Notification("SigmaWeb+","Novas notas disponiveis!").notify()
@@ -89,7 +93,6 @@ class Service():
             except:
                 return False
             
-            print message
             if message[:3] == "TOC": #Timeout change
                 self.userData['update_timeout'] = float(message[4:]) * 60
             elif message[:3] == "ATC": #Auto check
@@ -97,7 +100,7 @@ class Service():
             elif message[:3] == "CKN": #Check now
                 self.userData['update_time'] = 0
             elif message[:3] == "KIL": #Kill
-                self.threadComm.sendMsg("KI1 "+str(self.userData['update_time']))
+                self.threadComm.sendMsg("KI1 "+str(self.userData['update_time']).zfill(10))
                 self.threadComm.sendMsg("KI2 "+self.sigmaWeb.getData())
                 self.kill()
             elif message[:3] == "SNT": #Send notification
@@ -111,6 +114,8 @@ class Service():
             elif message[:3] == "LCK": #Hash change
                 if message[4:] <> "":
                     self.userData['update_time'] = int(message[4:])
+            elif message[:3] == "SUD": #Set user data
+                self.sigmaWeb.setData(message[4:])
         return True
         
 class SigmaWebMonitor:
@@ -168,6 +173,9 @@ class SigmaWebMonitor:
         if not (self.data == None):
             return self.data
         return ""
+    
+    def setData(self, data):
+        self.data = data
         
 class SigmaWebMonitorException(Exception):
     def __init__(self, value):

@@ -40,6 +40,8 @@ class KivyApp(kivy.app.App):
         
         self.GUI.setWindow(layout.screenLogin) #Carrega janela de login
         events.Events().trigger(events.EVENT_LOGIN, *self.userConfig.getLogin()) #Tenta realizar o login
+        
+        self.update()
         events.Events().trigger(events.EVENT_UPDATEDATA, *self.userConfig.getUserData())
         events.Events().trigger(events.EVENT_APPSTART, *(self.userConfig.getUserData() + self.userConfig.getUserConfig()))
 
@@ -48,7 +50,8 @@ class KivyApp(kivy.app.App):
     '''
 
     def on_stop(self):
-        events.Events().trigger(events.EVENT_APPEND)
+        shutdownService = True if (self.GUI.getWindow()==layout.screenLogin) else False
+        events.Events().trigger(events.EVENT_APPEND, shutdownService)
         
     def on_pause(self):
         if self.GUI.getWindow() == layout.screenLogin: #If app is on Login screen, then closes everything
