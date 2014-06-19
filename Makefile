@@ -97,7 +97,7 @@ install: distclean install_venv install_pipmodules install_pythonforandroid crea
 android_release:
 	source env_var.sh; \
 	cd $(PYTHON_FOR_ANDROID_PACKAGE); \
-	$(PY) ./build.py --package $(APK_PACKAGE) --name $(APP_NAME) --version $(APK_VERSION) --orientation $(APK_ORIENTATION) --icon $(APK_ICON) --presplash $(APK_PRESPLASH) --dir $(PROJECT_DIR) $(APK_PERMISSIONS) release
+	$(PY) ./build.py --package $(APK_PACKAGE) --name $(APP_NAME) --version $(APK_VERSION) --orientation $(APK_ORIENTATION) --icon $(APK_ICON) --presplash $(APK_PRESPLASH) --dir $(PROJECT_DIR) $(APK_PERMISSIONS) --window release
 	make sign_android
 
 .PHONY: sign_android
