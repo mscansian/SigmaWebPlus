@@ -1,6 +1,11 @@
-BEM VINDO AO SIGMAWEB+ (dev)
+SigmaWeb+
+==============
 
-Agora é possível saber quando uma nota é publicada no sistem sem ter o trabalho acessar o SigmaWeb e verificar várias vezes ao dia. Com o SigmaWeb+, você deixa esta tarefa para o computador.
-O funcionamento é simples, basta escolher quais materias acompanhar e o intervalo de tempo para verificação. O SigmaWeb+ roda em segundo plano e automaticamente verifica, em intervalos de tempo predeterminados, se novas notas foram publicadas. Os avisos de notas publicadas são mostrado para o usuário utilizando as dicas de balão do Windows.
-Este é um programa foi desenvolvido e testado para alunos da UDESC-CCT, mas pode ser utilizado por alunos de outros centros. Caso queira ajudar a desenvolver o programa para outros centro, entre em contato.
-O SigmaWeb+ é um software gratuito, de código aberto, distribuído de acordo com a licença GNU GPLv3.
+SigmaWeb+ é um aplicativo direcionado aos alunos da Universidade do Estado de Santa Catarina (UDESC). O objetivo dele é fazer um monitoramento do [sistema academico](http://sigmaweb.cav.udesc.br) e avisar o usuário quando novos resultados de avaliações estão disponíveis.
+
+Features
+--------------
+* Fácil de utilizar: Os menus são simples e instintivos
+* Multi-plataforma: Funciona em Android, Windows e Linux
+* Seguro: Todos os dados transmitidos são criptografados
+* Baixo trafego de dados: Utiliza um servidor intermediário para otimizar o trafego de dados na rede (muito importante em conexões 3g)
