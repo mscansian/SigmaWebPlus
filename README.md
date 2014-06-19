@@ -24,10 +24,10 @@ $ git submodule update
 
 Configure o arquivo env_var.sh 
 ```
-export ANDROIDSDK=**(CAMINHO DO SDK)**
-export ANDROIDNDK=**(CAMINHO DO NDK)**
-export ANDROIDAPI=**(VERSAO DO SDK)**
-export ANDROIDNDKVER=**(VERSAO DO NDK)**
+export ANDROIDSDK=CAMINHO-DO-SDK
+export ANDROIDNDK=CAMINHO-DO-NDK
+export ANDROIDAPI=VERSAO-DO-SDK
+export ANDROIDNDKVER=VERSAO-DO-NDK
 export PATH=$ANDROIDNDK:$ANDROIDSDK/platform-tools:$ANDROIDSDK/tools:$PATH
 ```
 
