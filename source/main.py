@@ -1,18 +1,31 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import time
 from kivy.utils import platform
 from kivyapp import KivyApp
 from service import ServiceLaucher
 from service.threadcomm.threadcomm import ThreadComm, ThreadCommException, ThreadCommClient
-from singleinstance.singleinstance import SingleInstance 
+from singleinstance.singleinstance import SingleInstance
+import events 
 
 class SigmaWeb:
+    #Constants
+    CONFIG_SINGLEINSTANCEPORT = 50363
+    CONFIG_THREADCOMMPORT = 51352
+    CONFIG_THREADCOMMID = " sigmawebplus"
+    
+    #Objects
     singleInstance = None
     kivy = None
     threadComm = None
     service = None
+    
+    #Variables
+    oldServiceData = None
+    
+    '''
+    ''   APP INITIALIZATION
+    '''
     
     def __init__(self):
         pass
@@ -20,14 +33,13 @@ class SigmaWeb:
     def run(self):
         self.on_start()
     
-    def on_start(self):
+    def on_start(self):     
         #Creates a handle for SingleInstance (this is not necessary on Android 'cause the OS takes care of this!
         if platform <> 'android':
-            self.singleInstance = SingleInstance(50363, False)
+            self.singleInstance = SingleInstance(self.CONFIG_SINGLEINSTANCEPORT, False)
         
         #Load ThreadComm and check if service is running
-        dadoNotas = None
-        self.threadComm = ThreadComm(51352, "sigmawebplus", ThreadCommClient)
+        self.threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommClient)
         try:
             self.threadComm.start()
         except ThreadCommException:
@@ -35,38 +47,52 @@ class SigmaWeb:
         else:
             #Service is running. Get all info from server and ask to shutdown
             self.threadComm.sendMsg("KIL")
+            self.oldServiceData = []
             while True:
                 try:
                     message = self.threadComm.recvMsg()
                 except ThreadCommException:
                     pass
                 else:
-                    if message[:3] == "SH2":
-                        dadoNotas = dadoNotas + [message[4:(32+4)], message[(32+5):]]
-                    elif message[:3] == "SH1":
-                        dadoNotas = [message[4:]]
-                    elif message == "CLS":
+                    if message[:3] == "KI1":
+                        self.oldServiceData.append(message[4:]) #update_time: Last time the data was updated
+                    elif message[:3] == "KI2":
+                        self.oldServiceData.append(message[4:(32+4)]) #update_hash: The hash of last update
+                        self.oldServiceData.append(message[(32+5):])  #update_data: The data of last update
+                    elif message == "DIE": #Wait for the server to reply that everything is being closed
+                        #Trash threadcomm connection and start a new one
+                        self.threadComm = None #Doing this because python garbage collector sometimes acts weird!
+                        self.threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommClient)
                         break
         
         #Load Service
         self.service = ServiceLaucher()
         
         #Connect Threadcomm
-        Connected = False
-        while not Connected:
+        while True: #
             try:
                 self.threadComm.start()
             except ThreadCommException:
                 pass
             else:
-                Connected = True
+                break
+        
+        #Subscribe to events
+        events.Events().subscribe(events.EVENT_RELOAD, self.on_event_reload)
+        events.Events().subscribe(events.EVENT_CONFIGCHANGE, self.on_event_configchange)
+        events.Events().subscribe(events.EVENT_LOGIN, self.on_event_login)
+        events.Events().subscribe(events.EVENT_WRONGPASSWORD, self.on_event_wrongpassword)
+        events.Events().subscribe(events.EVENT_APPSTART, self.on_event_appstart)
+        events.Events().subscribe(events.EVENT_APPEND, self.on_event_append)
+        events.Events().subscribe(events.EVENT_KIVYUPDATE, self.update)
         
         #Load and start kivy
         self.kivy = KivyApp()
-        self.kivy.setCallback(self.update, self.on_event)
-        self.kivy.nextUpdate = dadoNotas
         self.kivy.run()
-        
+
+    '''
+    ''   APP FINALIZATION
+    '''
     
     def on_stop(self):
         if platform <> 'android':
@@ -74,52 +100,69 @@ class SigmaWeb:
         self.threadComm.stop()
         #self.service.kill(force=True)
     
+    '''
+    ''   MAIN UPDATE
+    '''
+    
     def update(self, *args):
+        #Check if oldServiceData contains information
+        if self.oldServiceData <> None:
+            events.Events().trigger(events.EVENT_UPDATEDATA, *self.oldServiceData) #Trigger kivy event to update data
+            self.oldServiceData = None
+        
         try:
             message = self.threadComm.recvMsg()
         except ThreadCommException as e:
             pass
         else:
             if message[:3] == "NNA": #New Notas Available
-                #Separa notas e Hash
-                hash = message[4:(32+4)]
-                notas = message[(32+5):]
-                
-                #Manda as notas para a aplicacao kivy
-                self.kivy.updateNotas(hash, notas, 'Novas notas disponiveis!\n\nAtualizado em: '+time.strftime("%x %X")+'\n\n\nDeslize para visualizar')
+                #Parse the information
+                time = message[4:(10+4)] #Beware: This will stop working on 20 Nov 2286!!!!!
+                hash = message[(10+4):(32+10+4)]
+                data = message[(32+10+4+1):]
+                events.Events().trigger(events.EVENT_UPDATEDATA, time, hash, data) #Trigger kivy event to update data
             elif message[:3] == "UTD":
-                self.kivy.updateNotas('', '', '\n\nAtualizado em: '+time.strftime("%x %X")+'\n\n\nDeslize para visualizar')
+                events.Events().trigger(events.EVENT_UPTODATE, message[4:])
             elif message[:3] == "ERR": #Erro no servidor
                 if message[4:] == "Auth error":
-                    self.kivy.on_event("Logoff") #Log user off
+                    events.Events().trigger(events.EVENT_WRONGPASSWORD)
+                else:
+                    events.Events().trigger(events.EVENT_SERVERERROR)
+
+    '''
+    ''   EVENT HANDLER
+    '''
+    
+    def on_event_reload(self, *args):
+        self.threadComm.sendMsg("CKN")
         
-    def on_event(self, eventType, *args):
-        if eventType == "VerificarNotas":
-            self.threadComm.sendMsg("CKN")
-        elif eventType == "ConfigChange":
-            config = args[2]
-            value = args[3]
-            if config == 'update_time':
-                self.threadComm.sendMsg("TOC "+value)
-            elif config == 'update_auto':
-                self.threadComm.sendMsg("ATC "+value)
-            else:
-                pass
-        elif eventType == "Login":
-            self.threadComm.sendMsg("UNC "+args[0])
-            self.threadComm.sendMsg("UNP "+args[1])
-        elif eventType == "Logoff":
-            self.threadComm.sendMsg("UNC ")
-            self.threadComm.sendMsg("UNP ")
-        elif eventType == "ProgramStart":
-            self.threadComm.sendMsg("LCK "+args[0])
-            self.threadComm.sendMsg("HSC "+args[1])
-            self.threadComm.sendMsg("TOC "+args[2])
-            self.threadComm.sendMsg("ATC "+args[3])
-        elif eventType == "ProgramExit":
-            self.on_stop()
-        else:
-            print "Warning: Event caught but not recognized '"+eventType+"' in main.py"
+    def on_event_configchange(self, *args):
+        config, section, key, value = args
+        if key == 'update_timeout':
+            self.threadComm.sendMsg("TOC "+str(value))
+        elif key == 'update_auto':
+            self.threadComm.sendMsg("ATC "+str(value))
+        elif (key == 'app_delete') and (value =='1'):
+            self.kivy.stop()
+    
+    def on_event_login(self, *args):
+        self.threadComm.sendMsg("UNC "+args[0])
+        self.threadComm.sendMsg("UNP "+args[1])
+        self.threadComm.sendMsg("CKN")
+    
+    def on_event_wrongpassword(self, *args):
+        self.threadComm.sendMsg("UNC ")
+        self.threadComm.sendMsg("UNP ")
+    
+    def on_event_appstart(self, *args):
+        time, hash, data, timeout, auto = args
+        self.threadComm.sendMsg("LCK "+time)
+        self.threadComm.sendMsg("HSC "+hash)
+        self.threadComm.sendMsg("TOC "+timeout)
+        self.threadComm.sendMsg("ATC "+auto)
+    
+    def on_event_append(self, *args):
+        self.on_stop()    
 
 if __name__ == '__main__':
     SigmaWeb().run()

@@ -1,13 +1,58 @@
-<SigmaWebLogo@Image>
-	size_hint: 1, 0.3
-	source: 'res/logo.png'
-	allow_strech: True
+<SigmaWebLogo@BoxLayout>
+	size_hint: 1, 0.10
 	canvas.before:
-        Color:
-            rgb: 0.188, 0.188, 0.188, 1
-        Rectangle:
-            pos: self.pos
-            size: self.size
+		Color:
+			rgb: 10/255.0, 45/255.0, 35/255.0, 1
+		Rectangle:
+			pos: self.pos
+			size: self.size
+	canvas.after:
+		Color:
+			rgb: 10/5/255.0, 45/5/255.0, 35/5/255.0, 1
+		Line:
+			points: (0, self.center_y-self.height/2, self.width,self.center_y-self.height/2)
+	AnchorLayout:
+		anchor_x: 'left'
+		Image: 
+			source: 'res/sigmaweb_white.png'
+			size_hint: 0.4,0.8
+			pos_hint: {'x': 0, 'y': 0.1}
+			
+	Label:
+		id: titulo
+		size_hint: 1, 1
+		markup: True
+		text: 'SigmaWeb+'
+		font_size: self.height/2*0.8
+		halign: 'left'
+
+<SigmaWebRefresh@AnchorLayout>
+	anchor_x: 'right'
+	width: btn.height
+	Button:
+		id: btn
+		size_hint: 0.4,1
+		on_press: self.overlay = 0.6; app.event_converter('VerificarNotas')
+		on_release: self.overlay = 0
+		pos_hint: {'x': 0, 'y': 0}
+		overlay: 0
+		canvas.after:
+			Color:
+				rgb: 10/255.0, 45/255.0, 35/255.0, 1
+			Rectangle:
+				pos: self.pos
+				size: self.size
+			Color:
+				rgb: 1,1,1,1
+			Rectangle:
+				source: 'res/reload.png'
+				pos: (self.center_x-self.width/1.8/2, self.center_y-self.height/1.8/2)
+				size: (self.width/1.8, self.height/1.8)
+			Color:
+				rgba: 0,0,0,self.overlay
+			Rectangle:
+				pos: self.pos
+				size: self.size
 
 <SigmaWebTextInput@TextInput>
 	multiline: False
@@ -25,11 +70,20 @@
 	BoxLayout:
 		orientation: 'vertical'
 		
+		canvas.before:
+			Color:
+				rgba: 0.86, 0.86, 0.86, 1
+			Rectangle:
+				pos: self.pos
+				size: self.size
+		
 		SigmaWebLogo:
 		
 		BoxLayout:
 			orientation: 'vertical'
 			size_hint: 1, .3
+			padding: [0, 10, 0, 0]
+			spacing: 10
 			
 			SigmaWebTextInput:
 				id: matricula
@@ -41,37 +95,185 @@
 				id: senha
 				hint_text: "Senha"
 				password: True
-				on_text_validate: app.on_event('Login', matricula.text, senha.text)
+				on_text_validate: app.event_converter('Login', matricula.text, senha.text)
 			
 			SigmaWebButton:
 				text: 'Entrar'
-				on_press: app.on_event('Login', matricula.text, senha.text)
+				on_press: app.event_converter('Login', matricula.text, senha.text)
 			
 		Label:
 
-<SigmaWebPageHeader@Button>:
-	size_hint: 1, 0.15
-	background_color: 0.33, 0.88, 0.33, 1
-    background_down: self.background_normal
+<SigmaWebPageHeader@Label>:
+	size_hint: 1, None
+	height: self.font_size * 2 * 2
     halign: 'center'
+    markup: True
+    canvas.before:
+    	Color:
+			rgb: 25/255.0, 117/255.0, 93/255.0, 1
+		Rectangle:
+			pos: self.pos
+			size: self.size
 
 <SigmaWebPage@BoxLayout>
 	orientation: 'vertical'
 	header: obj_header
-	content: obj_content
+	notas: obj_notas
 	
 	SigmaWebPageHeader:
 		id: obj_header
-		text: 'Home'
-		
-	Label:
-		id: obj_content
-		color: 0.18,0.18,0.18,1
-		halign: 'center'
-		text: 'Suas notas estão sendo carregadas\n\nAguarde...'
+	
+	BoxLayout:
+		padding: [0, 10, 0, 0]
+		size_hint: (1, None)
+		height: codigo.font_size*2.3
+		canvas.before:
+	    	Color:
+				rgb: 25/255.0, 117/255.0, 93/255.0, 1
+			Line:
+				points: (self.center_x-self.width/2, self.center_y-self.height/2, self.center_x+self.width/2,self.center_y-self.height/2)
+		Label:
+			id: codigo
+			text: 'Avaliacao'
+			color: 0.18, 0.18, 0.18, 1
+		Label:
+			size_hint: (0.25,1)
+			text: 'Peso'
+			color: 0.18, 0.18, 0.18, 1
+		Label:
+			size_hint: (0.25,1)
+			text: 'Nota'
+			color: 0.18, 0.18, 0.18, 1
+	BoxLayout:
+		size_hint: (1, None)
+		id: obj_notas
+		orientation: 'vertical'
 
-<SigmaWebPage@BoxLayout>
+		Label:
+			id: obj_content
+			color: 0.18,0.18,0.18,1
+			halign: 'center'
+			text: 'Nenhuma nota publicada'
+	Label:
+
+<SigmaWebHomePage@BoxLayout>
+	dados: obj_dados
+	materias: obj_materias
+	lastupdate: obj_lastupdate
 	orientation: 'vertical'
+	
+	BoxLayout:
+		orientation: 'vertical'
+		size_hint: 0.8, 1
+		pos_hint: {'x': 0.1, 'y':0}
+		BoxLayout:
+			size_hint: (1, None)
+			height: obj_dados.font_size * 2 * 3.4
+			Label:
+				id: obj_dados
+				markup: True
+				halign: 'center'
+				font_size: '17dp'
+				color: 0.18, 0.18, 0.18, 1
+		Label:
+			size_hint: (1, None)
+			height: self.font_size * 2.5
+			text: '[b]Resultados parciais do aluno[/b]'
+	    	halign: 'center'
+	    	markup: True
+	    	canvas.before:
+		    	Color:
+					rgb: 25/255.0, 117/255.0, 93/255.0, 1
+				Rectangle:
+					pos: self.pos
+					size: self.size
+		BoxLayout:
+			padding: [0, 10, 0, 0]
+			size_hint: (1, None)
+			height: codigo.font_size*2.3
+			canvas.before:
+		    	Color:
+					rgb: 25/255.0, 117/255.0, 93/255.0, 1
+				Line:
+					points: (self.center_x-self.width/2, self.center_y-self.height/2, self.center_x+self.width/2,self.center_y-self.height/2)
+			Label:
+				id: codigo
+				text: 'Codigo'
+				color: 0.18, 0.18, 0.18, 1
+			Label:
+				text: 'Media parcial'
+				color: 0.18, 0.18, 0.18, 1
+		BoxLayout:
+			size_hint: (1, None)
+			id: obj_materias
+			orientation: 'vertical'
+		BoxLayout:
+			size_hint: (1, None)
+			height: obj_lastupdate.font_size*2.8	
+			Label:
+				id: obj_lastupdate
+				color: 0.18, 0.18, 0.18, 1
+				text: 'Ultima atualizacao em 18/06/14 23:18'
+				size_hint: (1, None)
+				height: codigo.font_size*2.3
+			
+		Label:
+			color: 0.18, 0.18, 0.18, 1
+			halign: 'center'
+			text: 'Deslize para ver detalhes\n\n|\n\\/'
+			
+<Materia@BoxLayout>
+	codigo: obj_codigo
+	nota: obj_nota
+	size_hint: (1, None)
+	height: obj_codigo.font_size * 2
+	Label:
+		id: obj_codigo
+		color: 0.18, 0.18, 0.18, 1
+	Label:
+		id: obj_nota
+		color: 0.18, 0.18, 0.18, 1
+
+<Nota@BoxLayout>
+	nome: obj_nome
+	peso: obj_peso
+	nota: obj_nota
+	size_hint: (1, None)
+	height: obj_nome.font_size * 2
+	Label:
+		id: obj_nome
+		color: 0.18, 0.18, 0.18, 1
+	Label:
+		id: obj_peso
+		size_hint: (0.25,1)
+		color: 0.18, 0.18, 0.18, 1
+	Label:
+		id: obj_nota
+		size_hint: (0.25,1)
+		color: 0.18, 0.18, 0.18, 1
+
+<Nota2@BoxLayout>
+	nome: obj_nome
+	peso: obj_peso
+	nota: obj_nota
+	size_hint: (1, None)
+	height: obj_nome.font_size * 2
+	canvas.before:
+    	Color:
+			rgb: 25/255.0, 117/255.0, 93/255.0, 1
+		Rectangle:
+			pos: self.pos
+			size: self.size
+	Label:
+		id: obj_nome
+		markup: True
+	Label:
+		id: obj_peso
+		size_hint: (0.25,1)
+	Label:
+		markup: True
+		id: obj_nota
+		size_hint: (0.25,1)
 
 <screenMain>
 	paineis: obj_paineis
@@ -87,17 +289,15 @@
 		orientation: 'vertical'
 		
 		SigmaWebLogo:
+			SigmaWebRefresh:
 		
 		Carousel:
 			id: obj_paineis
-			direction: 'right'
+			direction: 'bottom'
 				
-			SigmaWebPage:
-			
-		SigmaWebButton:
-			size_hint: 1, .2
-			text: 'Verificar notas agora'
-			font_size: self.height/5
-			on_press: app.on_event('VerificarNotas')
-			pos_hint: {'x': 0, 'y': 0}
-			size_hint: 1, .2
+			BoxLayout:
+				orientation: 'vertical'
+				Label:
+					text: 'Aguarde enquanto o SigmaWeb+ faz download de suas notas...'
+					color: 0.18,0.18,0.18,1
+					halign: 'center'
