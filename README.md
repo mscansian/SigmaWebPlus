@@ -16,25 +16,35 @@ Rodar aplicativo a partir do código fonte (Linux)
 Primeiramente é necessário fazer o download e instalar o [Android SDK](http://developer.android.com/sdk/index.html) e [Android NDK](http://developer.android.com/tools/sdk/ndk/index.html)
 
 Copie o código fonte do SigmaWeb+ para o seu computador
-	$ git clone https://github.com/mscansian/SigmaWebPlus.git
-	$ cd SigmaWebPlus
-	$ git submodule update
+```
+$ git clone https://github.com/mscansian/SigmaWebPlus.git
+$ cd SigmaWebPlus
+$ git submodule update
+```
 
 Configure o arquivo env_var.sh 
-	export ANDROIDSDK=**(CAMINHO DO SDK)**
-	export ANDROIDNDK=**(CAMINHO DO NDK)**
-	export ANDROIDAPI=**(VERSAO DO SDK)**
-	export ANDROIDNDKVER=**(VERSAO DO NDK)**
-	export PATH=$ANDROIDNDK:$ANDROIDSDK/platform-tools:$ANDROIDSDK/tools:$PATH
+```
+export ANDROIDSDK=**(CAMINHO DO SDK)**
+export ANDROIDNDK=**(CAMINHO DO NDK)**
+export ANDROIDAPI=**(VERSAO DO SDK)**
+export ANDROIDNDKVER=**(VERSAO DO NDK)**
+export PATH=$ANDROIDNDK:$ANDROIDSDK/platform-tools:$ANDROIDSDK/tools:$PATH
+```
 
 Instale as dependência
-	$ make install
+```
+$ make install
+```
 
 Iniciando o aplicativo no Linux
-	$ make
+```
+$ make
+```
 
 Iniciando o aplicativo no Android (ative 'USB debugging' no celular e conecte ele no computador)
-	$ make android
+```
+$ make android
+```
 (Estes passos foram testados no Ubuntu 14.04 LTS)
 
 Dependências
