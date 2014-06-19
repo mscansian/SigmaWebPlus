@@ -9,9 +9,9 @@
 require 'crypto_rnd.php';
 
 //Limpa o diretorio de cookies
-//Deleta arquivos na pasta cookie que não foram modificados a mais de 1 hora
+//Deleta arquivos na pasta cookie que não foram modificados a mais de meia hora
 foreach (glob('cookies/'."*") as $file) {
-	if (filemtime($file) < time() - 3600) {
+	if (filemtime($file) < time() - 1800) {
 		unlink($file);
 	}
 }
