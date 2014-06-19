@@ -83,7 +83,6 @@ class KivyApp(kivy.app.App):
         self.userConfig = Userconfig(config)
         
         #Set some kivy options
-        #Todo: Check if this is working (I don't think so)
         kivy.Config.set('kivy', 'exit_on_escape', 0)
         kivy.Config.set('kivy', 'log_enable', 0)
 
@@ -131,7 +130,7 @@ class Userconfig:
     defaultConfig = {
                      'username': '',
                      'password': '', 
-                     'update_timeout': '60', 
+                     'update_timeout': '180', 
                      'update_time': '0', 
                      'update_hash': '', 
                      'update_auto': '1', 
@@ -150,6 +149,7 @@ class Userconfig:
     def clearAll(self):
         self.clearLogin()
         self.clearUserData()
+        self.clearUserConfig()
     
     def setLogin(self, username, password):
         self.setConfig('username', username)
@@ -179,15 +179,19 @@ class Userconfig:
                 self.getConfig('update_data')
                 ]
     
+    def clearUserData(self):
+        self.setUserData('0', '', '')
+    
     def getUserConfig(self):
         return [
                 self.getConfig('update_timeout'),
                 self.getConfig('update_auto')
                 ]
-    
-    def clearUserData(self):
-        self.setUserData('0', '', '')
         
+    def clearUserConfig(self):
+        self.setConfig('update_timeout', '180')
+        self.setConfig('update_auto', '1')    
+    
     def setConfig(self, key, value):
         #Change configuration and write to file
         self.configObject.set(self.defaultSection,key, value)
@@ -201,5 +205,9 @@ class Userconfig:
     def on_change(self, config, section, key, value):
         if (config==self.configObject) and (section==self.defaultSection) and (key=='app_delete') and (value=='1'):
             self.clearAll()
+        
+        if (config==self.configObject) and (section==self.defaultSection) and (key=='update_timeout') and (int(value) < 30):
+            self.setConfig('update_timeout', '30')
+            value = '30'
         
         events.Events().trigger(events.EVENT_CONFIGCHANGE, config, section, key, value) #Forward to event handler

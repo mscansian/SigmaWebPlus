@@ -68,6 +68,13 @@ class Service():
             fireNotification, serverResponse = self.sigmaWeb.check()
         except SigmaWebMonitorException as e:
             if str(e)[1:15] == "Server error: ":
+                if (str(e)[15:-1] == 'Refused request from this username'):
+                    Notification("Erro ao atualizar notas","Tente novamente mais tarde").notify()
+                elif (str(e)[15:-1] == 'Refused request from this ip'):
+                    Notification("Erro ao atualizar notas","Tente novamente mais tarde").notify()
+                elif (str(e)[15:-1] == 'Wait before next query'):
+                    Notification("Erro ao atualizar notas","Voce deve aguardar alguns minutos entre cada atualizacao").notify()
+                
                 try: self.threadComm.sendMsg("ERR "+str(e)[15:-1])
                 except: pass
             elif str(e)  == "'Data is already up to date'":
@@ -75,15 +82,20 @@ class Service():
                 except: pass
             elif str(e) == "'Unable to fetch data from server'":
                 print "Service: Unable to fetch data from server"
+            
             else:
                 raise
-        else:
-            try: self.threadComm.sendMsg("NNA "+str(self.userData['update_time'])+serverResponse)
-            except: pass
+        else:           
+            if serverResponse[33:(33+10)] <> "<SigmaWeb>":
+                print "Service: Server error"
+                print serverResponse
+            else:
+                try: self.threadComm.sendMsg("NNA "+str(self.userData['update_time'])+serverResponse)
+                except: pass
+                
+                if fireNotification:
+                    Notification("Novas notas disponiveis!", "Atualizado em "+str(datetime.datetime.fromtimestamp(float(self.userData['update_time'])).strftime('%d/%m/%y %H:%M'))).notify()
             
-            if fireNotification:
-                Notification("SigmaWeb+","Novas notas disponiveis!").notify()
-        
     
     def listen(self):
         #Check for ThreadComm messages
