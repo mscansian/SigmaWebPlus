@@ -65,6 +65,7 @@ class Request
 			{
 				echo $output_hash."\n";
 				echo $output;
+				die('');
 			}
 		}
 		return True;
