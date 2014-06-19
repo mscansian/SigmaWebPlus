@@ -8,6 +8,7 @@ from kivy.utils import platform
 from notification_demo.components.notification import Notification
 from threadcomm.threadcomm import ThreadComm, ThreadCommServer
 
+APPVERSION = "1.0b"
 
 class Service():
     CONFIG_THREADCOMMPORT = 51352
@@ -142,7 +143,7 @@ class SigmaWebMonitor:
         
         try:
             pagina = http.Page("http://www.sigmawebplus.com.br/server/")
-            pagina.set_RequestHeaders(http.Header("username", self.username), http.Header("password", self.password), http.Header("hash", self.hash))
+            pagina.set_RequestHeaders(http.Header("username", self.username), http.Header("password", self.password), http.Header("hash", self.hash), http.Header("version", APPVERSION))
             pagina.Refresh()
             response = pagina.get_ResponseData()
         except:

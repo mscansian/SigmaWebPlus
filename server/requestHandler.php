@@ -8,13 +8,14 @@ class Request
 	const TIMEOUT_INVALID = 600;
 	
 	var $username, $password, $hash;
-	var $ip;
+	var $version, $ip;
 	
 	function Request()
 	{
 		$this->username = intval($_SERVER['HTTP_USERNAME']);
 		$this->password = $_SERVER['HTTP_PASSWORD'];
 		$this->hash     = preg_replace("/[^a-zA-Z0-9]+/", "", $_SERVER['HTTP_HASH']);
+		$this->version  = $_SERVER['HTTP_VERSION'];
 		$this->ip       = getenv("REMOTE_ADDR");
 	}
 	
