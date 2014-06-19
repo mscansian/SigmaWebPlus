@@ -3,14 +3,15 @@
 class Request
 {
 	const USERNAME_MAXINVALID = 5;
-	const USERNAME_MINTIME = 300;
-	const IP_MAXINVALID = 20;
-	const TIMEOUT_INVALID = 600;
+	const USERNAME_MINTIME    = 600;
+	const IP_MAXINVALID       = 20;
+	const TIMEOUT_INVALID     = 1200;
 	
-	var $username, $password, $hash;
-	var $version, $ip;
+	private $username, $password, $hash;
+	private $version, $ip;
+	private $nome,$centro;
 	
-	function Request()
+	public function Request()
 	{
 		$this->username = intval($_SERVER['HTTP_USERNAME']);
 		$this->password = $_SERVER['HTTP_PASSWORD'];
@@ -19,20 +20,19 @@ class Request
 		$this->ip       = getenv("REMOTE_ADDR");
 	}
 	
-	function validadeRequest()
+	public function validate()
 	{
 		if (!(($this->username <> "") && ($this->password <> "") && ($this->username <> 0)))
 		{
-			die('<error>Username or password blank</error>');
+			throw new Exception('Username or password blank');
 		}
 		
-		$this->updateRequestDB();
-		if (!$this->checkUsernameRequest()) { die('<error>Refused request from this username</error>'); }
-		if (!$this->checkIPRequest()) { die('<error>Refused request from this ip</error>'); } 		
-		return True;
+		$this->updateValidationDB();
+		$this->validateUsername();
+		$this->validateIP();
 	}
 	
-	function updateRequestDB()
+	private function updateValidationDB()
 	{
 		foreach (glob('requests/'."*") as $file) {
 			if (filemtime($file) < time() - self::TIMEOUT_INVALID) { 
@@ -41,99 +41,160 @@ class Request
 		}
 	}
 	
-	function checkUsernameRequest()
+	private function validateUsername()
 	{
-		if (!file_exists('requests/'.$this->username)) { return True; }
-	
-		$contents = file_get_contents('requests/'.$this->username);
-		$contents = explode('|',$contents);
-		
-		$lastRequest = $contents[0];
-		$invalidAttempts = $contents[1];
-		
-		if ($invalidAttempts >= self::USERNAME_MAXINVALID) { return False; }
-		if (($lastRequest+self::USERNAME_MINTIME) > time()) {
-			$output = file_get_contents('requests/DATA_'.$this->username);
-			
-			//Hash the output and respond
-			$output_hash = md5($output); #Debug
-			
-			if ($this->hash == $output_hash)
-			{
-				die('Up-to-date');
-			}
-			else
-			{
-				echo $output_hash."\n";
-				echo $output;
-				die('');
-			}
-		}
-		return True;
-	}
-	
-	function checkIPRequest()
-	{
-		if (!file_exists('requests/IP_'.$this->ip)) { return True; }
-	
-		$contents = file_get_contents('requests/IP_'.$this->ip);
-		$contents = explode('|',$contents);
-		
-		$invalidAttempts = $contents[0];
-		
-		if ($invalidAttempts >= self::IP_MAXINVALID) { return False; }
-		return True;
-	}
-	
-	function saveValidRequest($data)
-	{
-		file_put_contents('requests/'.$this->username, time().'|0');
-		file_put_contents('requests/DATA_'.$this->username, $data);
-	}
-	
-	function saveInvalidRequest()
-	{
-		$lastRequest = 0;
-		$invalidAttempts    = 0;
-		$invalidAttempts_IP = 0;
-		
-		if (file_exists('requests/'.$this->username)) 
+		if (file_exists('requests/'.$this->username))
 		{
 			$contents = file_get_contents('requests/'.$this->username);
 			$contents = explode('|',$contents);
-		
+			
 			$lastRequest = $contents[0];
 			$invalidAttempts = $contents[1];
+			
+			if ($invalidAttempts >= self::USERNAME_MAXINVALID)  { throw new Exception('Max incorrect login'); }
+			if (($lastRequest+self::USERNAME_MINTIME) > time()) { throw new Exception('Too many requests');   } 
 		}
-		
+	}
+	
+	private function validateIP()
+	{
 		if (file_exists('requests/IP_'.$this->ip))
 		{
 			$contents = file_get_contents('requests/IP_'.$this->ip);
 			$contents = explode('|',$contents);
-		
-			$invalidAttempts_IP = $contents[0];
+			
+			$invalidAttempts = $contents[0];
+			
+			if ($invalidAttempts >= self::IP_MAXINVALID) { throw new Exception('Max incorrect login from this IP'); }
 		}
-		
-		$invalidAttempts += 1;
-		$invalidAttempts_IP += 1;
-		
-		file_put_contents('requests/'.$this->username, $lastRequest.'|'.$invalidAttempts);
-		file_put_contents('requests/IP_'.$this->ip   , $invalidAttempts_IP);
 	}
 	
-	function getRequestUsername()
+	public function close($success, $data="")
+	{
+		if ($success)
+		{
+			file_put_contents('requests/'.$this->username, time().'|0');
+			file_put_contents('requests/DATA_'.$this->username.'_'.md5($this->password), $data);
+		}
+		else
+		{
+			$lastRequest = 0;
+			$invalidAttempts    = 0;
+			$invalidAttempts_IP = 0;
+			
+			if (file_exists('requests/'.$this->username))
+			{
+				$contents = file_get_contents('requests/'.$this->username);
+				$contents = explode('|',$contents);
+			
+				$lastRequest = $contents[0];
+				$invalidAttempts = $contents[1];
+			}
+			
+			if (file_exists('requests/IP_'.$this->ip))
+			{
+				$contents = file_get_contents('requests/IP_'.$this->ip);
+				$contents = explode('|',$contents);
+			
+				$invalidAttempts_IP = $contents[0];
+			}
+			
+			$invalidAttempts += 1;
+			$invalidAttempts_IP += 1;
+			
+			file_put_contents('requests/'.$this->username, $lastRequest.'|'.$invalidAttempts);
+			file_put_contents('requests/IP_'.$this->ip   , $invalidAttempts_IP);
+		}
+	}
+	
+	public function buildResponse($myAluno)
+	{
+		//Generate the output
+		$output = "<SigmaWeb>
+	<Aluno>
+		<Nome>"     .$myAluno->getDados('Nome')     ."</Nome>
+		<Matricula>".$myAluno->getDados('Matricula')."</Matricula>
+		<TipoAluno>".$myAluno->getDados('TipoAluno')."</TipoAluno>
+		<Status>"   .$myAluno->getDados('Status')   ."</Status>
+		<Semestre>" .$myAluno->getDados('Semestre') ."</Semestre>
+		<Centro>"   .$myAluno->getDados('Centro')   ."</Centro>
+	</Aluno>
+	<Materias>\n";
+		
+		foreach ($myAluno->getDados('Materias') as $Turma)
+		{
+			$output .= "		<Materia COD='".$Turma['Codigo']."' Nome='".$Turma['Nome']."' Turma='".$Turma['Turma']."' Centro='".$Turma['Centro']."'>\n";
+			if (isset($Turma['Notas']))
+			{
+				foreach ($Turma['Notas'] as $Nota)
+				{
+					$output .= "			<Nota Peso='".$Nota['Peso']."' Desc='".$Nota['Nome']."'>".$Nota['Nota']."</Nota>\n";
+				}
+				$output .= "			<Exame>".$Turma['Exame']."</Exame>\n";
+				$output .= "			<MediaFinal>".$Turma['MediaFinal']."</MediaFinal>\n";
+			}
+			$output .= "		</Materia>\n";
+		}
+		$output .= "	</Materias>\n";
+		$output .= "</SigmaWeb>";
+		
+		$this->nome = $myAluno->getDados('Nome');
+		$this->centro = $myAluno->getDados('Centro');
+		
+		return $output;
+	}
+	
+	public function sendOutput($output)
+	{
+		//Save request
+		$this->close(True, $output);
+		
+		//Hash the output and respond
+		$output_hash = md5($output);
+		
+		if ($this->hash == $output_hash)
+		{
+			new Logger($this->getUsername(), $this->getVersion(), 'Up-to-date ('.$output_hash.')', $this->nome, $this->centro);
+			echo 'Up-to-date';
+		}
+		else
+		{
+			new Logger($this->getUsername(), $this->getVersion(), 'New notas ('.$output_hash.')');
+			echo $output_hash."\n";
+			echo $output;
+		}
+	}
+	
+	public function getUsername()
 	{
 		return $this->username;
 	}
 	
-	function getRequestPassword()
+	public function getPassword()
 	{
 		return $this->password;
 	}
 	
-	function getRequestHash()
+	public function getHash()
 	{
 		return $this->hash;
+	}
+	
+	public function getVersion()
+	{
+		return $this->version;
+	}
+	
+	public function getCache()
+	{
+		if (file_exists('requests/DATA_'.$this->username.'_'.md5($this->password)))
+		{
+			return file_get_contents('requests/DATA_'.$this->username.'_'.md5($this->password));
+		}
+		else
+		{
+			throw new Exception('No cache available');
+		}
 	}
 }
 

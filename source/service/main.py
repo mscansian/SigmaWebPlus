@@ -69,11 +69,15 @@ class Service():
             fireNotification, serverResponse = self.sigmaWeb.check()
         except SigmaWebMonitorException as e:
             if str(e)[1:15] == "Server error: ":
-                if (str(e)[15:-1] == 'Refused request from this username'):
+                if (str(e)[15:-1] == 'Max incorrect login'):
+                    Notification("Erro: Muitos logins incorretos","Tente novamente mais tarde").notify()
+                elif (str(e)[15:-1] == 'Max incorrect login from this IP'):
+                    Notification("Erro: IP bloqueado","Tente novamente mais tarde").notify()
+                elif (str(e)[15:-1] == 'No cache available'):
                     Notification("Erro ao atualizar notas","Tente novamente mais tarde").notify()
-                elif (str(e)[15:-1] == 'Refused request from this ip'):
-                    Notification("Erro ao atualizar notas","Tente novamente mais tarde").notify()
-                elif (str(e)[15:-1] == 'Wait before next query'):
+                elif (str(e)[15:-1] == 'Version not suported'):
+                    Notification("Erro: Versao muito antiga","Baixe uma versão mais atualizada do aplicativo").notify()
+                elif (str(e)[15:-1] == 'Too many requests'):
                     Notification("Erro ao atualizar notas","Voce deve aguardar alguns minutos entre cada atualizacao").notify()
                 
                 try: self.threadComm.sendMsg("ERR "+str(e)[15:-1])

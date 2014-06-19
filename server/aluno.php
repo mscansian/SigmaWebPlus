@@ -20,31 +20,27 @@ function DOMinnerHTML(DOMNode $element)
 
 class Aluno
 {	
-	var $username;
-	var $pasword;
-	var $request;
-
-	var $dadosAluno;
+	private $username, $password;
+	private $dadosAluno;
 	
-	function Aluno($username, $password, $request)
+	public function Aluno($username, $password)
 	{
 		$this->username = $username;
 		$this->password = $password;
-		$this->request  = $request;
 	}
 	
-	function getDados($tipo)
+	public function getDados($tipo)
 	{
 		return $this->dadosAluno[$tipo];
 	}
 	
-	function refresh()
+	public function refresh()
 	{
 		$request = new cUrl();
 		
 		//Login
 		$response = $request->requestPost("https://sigmaweb.cav.udesc.br/sw/sigmaweba.php", array(LSIST => "SigmaWeb",LUNID => "UDESC",lusid => $this->username,luspa => $this->password,opta => "Login"));
-		if ($response == "") { die('<error>Connection error</error>'); }
+		if ($response == "") { throw new Exception('Connection error'); }
 		elseif ($response == '<html><head><META HTTP-EQUIV="Refresh" CONTENT="0;URL=sigmaweb0.php"></head></html>') { /*Auth okay, proceed*/ }
 		else
 		{
@@ -52,19 +48,18 @@ class Aluno
 			$ErrorMsg = utf8_decode($XPATH->query('*/td',$XPATH->query('*/table')->item(1))->item(1)->nodeValue);
 			if ($ErrorMsg == "Matrícula e/ou senha inválida")
 			{
-				$this->request->saveInvalidRequest();
-				die('<error>Auth error</error>');
+				throw new Exception('Auth error');
 			}
 			else
 			{
-				die('<error>Custom error msg: '.$ErrorMsg.'</error>');
+				throw new Exception('Custom error msg: '.$ErrorMsg);
 			}
 			unset($HTML); unset($XPATH);
 		}
 		
 		//Get main page
 		$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb0.php");
-		if ($response == "") { die('<error>Connection error</error>'); }
+		if ($response == "") { throw new Exception('Connection error'); }
 		else
 		{
 			$HTML = new DOMDocument; @$HTML->loadHTML($response); @$XPATH = new DOMXPath($HTML);
@@ -84,6 +79,7 @@ class Aluno
 		$Turmas = array();
 		$request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb1.php?var=R6655");
 		$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb4.php");
+		if ($response == "") { throw new Exception('Connection error'); }
 		if (strstr($response,"Não há matrícula efetivada para "))
 		{
 			//Erro, nao ha materias!
@@ -91,6 +87,7 @@ class Aluno
 		else
 		{
 			$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb5.php");
+			if ($response == "") { throw new Exception('Connection error'); }
 			$HTML = new DOMDocument; @$HTML->loadHTML($response); @$XPATH = new DOMXPath($HTML);
 			$NumTurmas = substr_count(DOMinnerHTML($XPATH->query('/html/body/form/table/tr[3]/td/select')->item(0)),"</option>");
 			for ($a=0; $a <= $NumTurmas-1; $a++)
@@ -111,6 +108,7 @@ class Aluno
 			$request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb5.php");
 			$request->requestPost("https://sigmaweb.cav.udesc.br/sw/sigmaweb7.php", array(nagru => $Turma['Codigo']."/".$Turma['Turma']."/".$Turma['Centro'], opta => 'Enter'));
 			$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb7.php");
+			if ($response == "") { throw new Exception('Connection error'); }
 			if (strstr($response, "Não há registro de notas parciais"))
 			{
 				//Erro, parte para a proxima!
@@ -156,6 +154,7 @@ class Aluno
 			$request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb6.php");
 			$request->requestPost("https://sigmaweb.cav.udesc.br/sw/sigmaweb7.php", array(nseme => substr($this->getDados('Semestre'),-6), opta => 'Avancar'));
 			$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb7.php");
+			if ($response == "") { throw new Exception('Connection error'); }
 			
 			$HTML = new DOMDocument; @$HTML->loadHTML($response); @$XPATH = new DOMXPath($HTML);
 			for ($TurmaID=0; $TurmaID<sizeof($Turmas); $TurmaID++)
