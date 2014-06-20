@@ -27,7 +27,8 @@ class Service():
                 'update_auto':    False,
                 'update_time':    0,
                 'update_data':    None,
-                'update_hash':    None
+                'update_hash':    None,
+                'update_force':   False
                 }
     
     def run(self):
@@ -46,9 +47,10 @@ class Service():
             self.listen()
             
             #Verifica por novas notas no sistema
-            if self.userData['update_auto'] and self.sigmaWeb.enoughInfo(): #Checka se o monitor esta autorizado a verificar notas e o SigmaWebMonitor tem informacoes suficientes
-                if (float(self.userData['update_time']) + self.userData['update_timeout']) < time.time():                     
+            if (self.userData['update_auto'] or self.userData['update_force']) and self.sigmaWeb.enoughInfo(): #Checka se o monitor esta autorizado a verificar notas e o SigmaWebMonitor tem informacoes suficientes
+                if ((float(self.userData['update_time']) + self.userData['update_timeout']) < time.time()) or self.userData['update_force']:                     
                     self.userData['update_time'] = int(time.time())
+                    self.userData['update_force'] = False
                     self.check()
             
             #Wait one second until next cycle (avoid consuming too much processing power)
@@ -87,9 +89,7 @@ class Service():
                 except: pass
             elif str(e) == "'Unable to fetch data from server'":
                 print "Service: Unable to fetch data from server"
-            
-            else:
-                raise
+            else: raise
         else:           
             if serverResponse[33:(33+10)] <> "<SigmaWeb>":
                 print "Service: Server error"
@@ -115,7 +115,7 @@ class Service():
             elif message[:3] == "ATC": #Auto check
                 self.userData['update_auto'] = (message[4:] == "1")
             elif message[:3] == "CKN": #Check now
-                self.userData['update_time'] = 0
+                self.userData['update_force'] = True
             elif message[:3] == "RFS": #Refresh client with info
                 try:
                     self.threadComm.sendMsg("RF1 "+str(self.userData['update_time']).zfill(10))
