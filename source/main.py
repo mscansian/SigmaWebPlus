@@ -38,44 +38,17 @@ class SigmaWeb:
         if platform <> 'android':
             self.singleInstance = SingleInstance(self.CONFIG_SINGLEINSTANCEPORT, False)
         
-        #Load ThreadComm and check if service is running
-        self.threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommClient)
-        try:
-            self.threadComm.start()
-        except ThreadCommException:
-            pass #Service is not running, keep going
-        else:
-            #Service is running. Get all info from server and ask to shutdown
-            self.threadComm.sendMsg("KIL")
-            self.oldServiceData = []
-            while True:
-                try:
-                    message = self.threadComm.recvMsg()
-                except ThreadCommException:
-                    pass
-                else:
-                    if message[:3] == "KI1":
-                        self.oldServiceData.append(message[4:]) #update_time: Last time the data was updated
-                    elif message[:3] == "KI2":
-                        self.oldServiceData.append(message[4:(32+4)]) #update_hash: The hash of last update
-                        self.oldServiceData.append(message[(32+5):])  #update_data: The data of last update
-                    elif message == "DIE": #Wait for the server to reply that everything is being closed
-                        #Trash threadcomm connection and start a new one
-                        self.threadComm = None #Doing this because python garbage collector sometimes acts weird!
-                        self.threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommClient)
-                        break
+        serviceAlive = self.isServiceAlive()
         
-        #Load Service
-        self.service = ServiceLaucher()
-        
-        #Connect Threadcomm
-        while True: #
-            try:
-                self.threadComm.start()
-            except ThreadCommException:
-                pass
-            else:
-                break
+        if (not serviceAlive):
+            #Load Service
+            self.service = ServiceLaucher()
+            
+            #Connect Threadcomm
+            while True: #
+                try: self.threadComm.start()
+                except ThreadCommException: pass
+                else: break
         
         #Subscribe to events
         events.Events().subscribe(events.EVENT_RELOAD, self.on_event_reload)
@@ -89,6 +62,27 @@ class SigmaWeb:
         #Load and start kivy
         self.kivy = KivyApp()
         self.kivy.run()
+        
+    def isServiceAlive(self):
+        #Load ThreadComm and check if service is running
+        self.threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommClient)
+        try: self.threadComm.start()
+        except ThreadCommException: return False #Service is not running
+        else:
+            #Service is running. Get all info from server and ask to shutdown
+            self.threadComm.sendMsg("RFS")
+            self.oldServiceData = []
+            while True:
+                try:
+                    message = self.threadComm.recvMsg()
+                except ThreadCommException: pass
+                else:
+                    if message[:3] == "RF1":
+                        self.oldServiceData.append(message[4:]) #update_time: Last time the data was updated
+                    elif message[:3] == "RF2":
+                        self.oldServiceData.append(message[4:(32+4)]) #update_hash: The hash of last update
+                        self.oldServiceData.append(message[(32+5):])  #update_data: The data of last update
+                        return True #Service is running!
 
     '''
     ''   APP FINALIZATION

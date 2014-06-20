@@ -116,9 +116,12 @@ class Service():
                 self.userData['update_auto'] = (message[4:] == "1")
             elif message[:3] == "CKN": #Check now
                 self.userData['update_time'] = 0
+            elif message[:3] == "RFS": #Refresh client with info
+                try:
+                    self.threadComm.sendMsg("RF1 "+str(self.userData['update_time']).zfill(10))
+                    self.threadComm.sendMsg("RF2 "+self.sigmaWeb.getData())
+                except: pass
             elif message[:3] == "KIL": #Kill
-                self.threadComm.sendMsg("KI1 "+str(self.userData['update_time']).zfill(10))
-                self.threadComm.sendMsg("KI2 "+self.sigmaWeb.getData())
                 self.kill()
             elif message[:3] == "SNT": #Send notification
                 Notification("SigmaWeb+",message[4:]).notify()
