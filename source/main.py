@@ -92,7 +92,6 @@ class SigmaWeb:
     
     def on_stop(self, shutdownService):
         if platform <> 'android': self.singleInstance.kill()
-        print shutdownService
         if shutdownService:
             try: self.threadComm.sendMsg("KIL")
             except Exception as e: print "Warning [self.threadComm.sendMsg(\"KIL\")]: "+str(e)
