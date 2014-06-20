@@ -61,4 +61,4 @@ Dependências
 
 Licença
 -----------
-[GNU LGPLv3](https://www.gnu.org/licenses/lgpl.html)
+[GNU GPLv3](https://www.gnu.org/licenses/gpl.html)
