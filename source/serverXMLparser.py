@@ -65,24 +65,24 @@ class alunoXML:
                                     valorPeso = None
                                 
                                 if (nota.text<>None):
-                                    valorNota = float(nota.text)
+                                    valorNota = self._float(nota.text, True)
                                 else:
                                     valorNota = None
                                                                 
                                 if valorNota <> None:
                                     totalNotasPublicadas = totalNotasPublicadas + 1
-                                    valorMediaParcial = valorMediaParcial + (valorNota * valorPeso)
+                                    valorMediaParcial = valorMediaParcial + (self._float(valorNota) * valorPeso)
                                     somaPesos = somaPesos + valorPeso
                                     
                                 conjuntoNotas.append({'Peso': valorPeso, 'Desc': nota.get("Desc"), 'Valor': valorNota})
                             elif nota.tag == "Exame":
                                 if (nota.text<>None):
-                                    valorExame = float(nota.text)
+                                    valorExame = self._float(nota.text, True)
                                 else:
                                     valorExame = None
                             elif nota.tag == "MediaFinal":
                                 if (nota.text<>None):
-                                    valorMediaFinal = float(nota.text)
+                                    valorMediaFinal = self._float(nota.text, True)
                                 else:
                                     valorMediaFinal = None
                             else:
@@ -115,6 +115,10 @@ class alunoXML:
                         
                         #Coloca a materia na arrai materias
                         self.materias.append(conjutoMateria)
+                        
+    def _float(self, num, text=False):
+        try: return float(num)
+        except: return num if text else 0.0 
             
 class alunoXMLError(Exception):
     def __init__(self, value):
