@@ -56,6 +56,7 @@ Dependências
 * [python-singleinstance](https://github.com/mscansian/python-singleinstance) (incluso no GIT como submodule) [(Licença)](https://github.com/mscansian/python-singleinstance/blob/master/LICENSE)
 * [python-threadcomm](https://github.com/mscansian/python-threadcomm) (incluso no GIT como submodule) [(Licença)](https://github.com/mscansian/python-threadcomm/blob/master/LICENSE)
 * [notification-demo](https://github.com/brousch/kivy-notification-demo) (incluso no código)
+* [PyCrypto](https://www.dlitz.net/software/pycrypto/) (incluso no Makefile) [(Licença)](https://github.com/dlitz/pycrypto/blob/master/COPYRIGHT)
 * python-notify2 (incluso no Makefile)
 
 Licença
