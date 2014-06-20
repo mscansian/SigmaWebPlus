@@ -70,7 +70,7 @@ class KivyApp(kivy.app.App):
         events.Events().trigger(events.EVENT_KIVYUPDATE, *args)
     
     def build_settings(self, settings):
-        jsondata = open('config.json', 'r').read()
+        jsondata = open('res/config.json', 'r').read()
         settings.add_json_panel('SigmaWeb+', self.config, data=jsondata)
 
     '''

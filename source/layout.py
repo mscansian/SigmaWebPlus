@@ -24,7 +24,7 @@ class GUI():
     
     def __init__(self):
         self.root = kivy.uix.boxlayout.BoxLayout() #Create root widget
-        Builder.load_file('layout.kv') #Load kv file
+        Builder.load_file('res/layout.kv') #Load kv file
 
     def setWindow(self, window):
         self.root.clear_widgets() #Clear current window
