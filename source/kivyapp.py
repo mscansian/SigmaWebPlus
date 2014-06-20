@@ -53,7 +53,7 @@ class KivyApp(kivy.app.App):
     '''
 
     def on_stop(self):
-        shutdownService = True if ((self.GUI.getWindow()==layout.screenLogin) or (self.userConfig.getConfig('update_auto')=='0')) else False
+        shutdownService = True if ((self.GUI.getWindow()==layout.screenLogin) or (self.userConfig.getConfig('update_auto')=='0') or (self.userConfig.getConfig('app_delete')=='1')) else False
         events.Events().trigger(events.EVENT_APPEND, shutdownService)
         
     def on_pause(self):

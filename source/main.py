@@ -38,11 +38,13 @@ class SigmaWeb:
         if platform <> 'android':
             self.singleInstance = SingleInstance(self.CONFIG_SINGLEINSTANCEPORT, False)
         
+        #Load Service
+        self.service = ServiceLaucher()
         serviceAlive = self.isServiceAlive()
         
         if (not serviceAlive):
-            #Load Service
-            self.service = ServiceLaucher()
+            #Start service
+            self.service.start()
             
             #Connect Threadcomm
             while True: #
@@ -90,11 +92,12 @@ class SigmaWeb:
     
     def on_stop(self, shutdownService):
         if platform <> 'android': self.singleInstance.kill()
+        print shutdownService
         if shutdownService:
             try: self.threadComm.sendMsg("KIL")
-            except: pass
-            try: self.service.kill(force=True)
-            except: pass
+            except Exception as e: print "Warning [self.threadComm.sendMsg(\"KIL\")]: "+str(e)
+            try: self.service.kill()
+            except Exception as e: print "Warning [self.service.kill()]: "+str(e)
         self.threadComm.stop()
     
     '''
@@ -141,7 +144,6 @@ class SigmaWeb:
             self.threadComm.sendMsg("ATC "+str(value))
         elif (key == 'app_delete') and (value =='1'):
             self.kivy.stop()
-            self.service.kill(force=True)
     
     def on_event_login(self, *args):
         self.threadComm.sendMsg("UNC "+args[0])
