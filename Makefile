@@ -9,7 +9,7 @@ PIP := $(VENV)/bin/pip
 # Python for Android settings
 PYTHON_FOR_ANDROID := $(WD)/python-for-android
 PYTHON_FOR_ANDROID_PACKAGE := $(PYTHON_FOR_ANDROID)/dist/default
-PY4A_MODULES := "plyer openssl pyjnius kivy lxml"
+PY4A_MODULES := "plyer openssl pyjnius kivy lxml pycrypto"
 
 # Android SDK setting
 
@@ -77,6 +77,7 @@ install_pipmodules:
 	#sudo apt-get install ia32-libs libc6-dev-i386 -y
 	$(PIP) install cython
 	$(PIP) install kivy
+	$(PIP) install pycrypto
 
 .PHONY: install_pythonforandroid
 install_pythonforandroid:
