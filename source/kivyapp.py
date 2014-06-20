@@ -9,9 +9,9 @@ import kivy.clock
 
 import serverXMLparser, layout, events, service.version
 
+import base64
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
-import base64
 
 class KivyApp(kivy.app.App):
     #Objects
@@ -24,7 +24,6 @@ class KivyApp(kivy.app.App):
     ''   APP INITIALIZATION
     '''
  
-    #Override methods
     def build(self):
         #Load GUI
         self.GUI = layout.GUI()
@@ -33,7 +32,7 @@ class KivyApp(kivy.app.App):
         kivy.clock.Clock.schedule_interval(self.update, 0) #Schedule main update
          
     def on_start(self):
-        self.userConfig.setConfig('app_delete', '0') #Hack
+        self.userConfig.setConfig('app_delete', '0') #Hack: Deixa essa opcao sempre como falso, para o user poder habilitar
         
         #Subscribe to events
         events.Events().subscribe(events.EVENT_RELOAD, self.on_event_reload)
@@ -81,7 +80,6 @@ class KivyApp(kivy.app.App):
     ''   CONFIGURATION RELATED
     '''
 
-
     def build_config(self, config):
         #Initiate Userconfig object
         self.userConfig = Userconfig(config)
@@ -106,11 +104,11 @@ class KivyApp(kivy.app.App):
             username, password = args
             key = RSA.importKey(open('res/sigmawebplus-server.pub').read())
             cipher = PKCS1_OAEP.new(key)
-            password = base64.b64encode(cipher.encrypt(password))
+            password = base64.b64encode(cipher.encrypt(password)) #Base64 eh utilizado pra evitar erros na hora de salvar/transmitir a senha (a internet nao suporta formato binario!)
             events.Events().trigger(events.EVENT_LOGIN, username, password)
     
     def on_event_reload(self, *args):
-        pass #Colocar uma mensagem na tela de 'Carregando notas'
+        pass #Todo: Colocar uma mensagem na tela de 'Carregando notas'
     
     def on_event_login(self, *args):
         if not ((args[0] == "") or (args[1]=="")):
@@ -148,9 +146,8 @@ class Userconfig:
                      'app_version': service.version.__version__
                      }
     
-    
+    #Objects
     configObject = None
-    changeCallback = None
     
     def __init__(self, configObject):
         self.configObject = configObject
@@ -217,7 +214,7 @@ class Userconfig:
             self.clearAll()
         
         if (config==self.configObject) and (section==self.defaultSection) and (key=='update_timeout') and (int(value) < 30):
-            self.setConfig('update_timeout', '30')
+            self.setConfig('update_timeout', '30') #Nao permite ao usuario setar um timeout menot que 30 min
             value = '30'
         
         events.Events().trigger(events.EVENT_CONFIGCHANGE, config, section, key, value) #Forward to event handler
