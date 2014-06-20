@@ -1,0 +1,88 @@
+<SigmaWeb>
+	<Aluno>
+		<Nome>Fernanda Ribeiro</Nome>
+		<Matricula>210359102</Matricula>
+		<TipoAluno>Aluno Regular</TipoAluno>
+		<Status>Status: 6 - Recepo Dirios</Status>
+		<Semestre>Semestre: 2014/1</Semestre>
+		<Centro>UDESC/CCT</Centro>
+	</Aluno>
+	<Materias>
+		<Materia COD='ETT2001' Nome='ESTRADAS II' Turma='A' Centro='CCT'>
+		</Materia>
+		<Materia COD='MAP0001' Nome='MATEMATICA APLICADA' Turma='A' Centro='CCT'>
+			<Nota Peso='25%' Desc='Prova 1'></Nota>
+			<Nota Peso='25%' Desc='Prova 2'></Nota>
+			<Nota Peso='25%' Desc='Prova 3'></Nota>
+			<Nota Peso='25%' Desc='Prova 4'></Nota>
+			<Exame></Exame>
+			<MediaFinal></MediaFinal>
+		</Materia>
+		<Materia COD='EDI0001' Nome='EQUACOES DIFERENCIAIS' Turma='F' Centro='CCT'>
+			<Nota Peso='33%' Desc=''>5.5</Nota>
+			<Nota Peso='33%' Desc=''>1.5</Nota>
+			<Nota Peso='34%' Desc=''></Nota>
+			<Exame></Exame>
+			<MediaFinal></MediaFinal>
+		</Materia>
+		<Materia COD='CDI2001' Nome='CALCULO DIFERENCIAL E INTEGRAL I' Turma='A' Centro='CCT'>
+			<Nota Peso='20%' Desc='Prova 1'>8.5</Nota>
+			<Nota Peso='30%' Desc='Prova 2'>3.7</Nota>
+			<Nota Peso='20%' Desc='Prova 3'>5.9</Nota>
+			<Nota Peso='20%' Desc='Prova 4'>1.0</Nota>
+			<Nota Peso='10%' Desc='Prova 5'>3.6</Nota>
+			<Exame></Exame>
+			<MediaFinal></MediaFinal>
+		</Materia>
+		<Materia COD='FGE2001' Nome='FISICAL GERAL II' Turma='C' Centro='CCT'>
+			<Nota Peso='35%' Desc='Prova 1'>7.0</Nota>
+			<Nota Peso='25%' Desc='Prova 2'>4.5</Nota>
+			<Nota Peso='40%' Desc='Prova 3'>3.6</Nota>
+			<Exame>5.7</Exame>
+			<MediaFinal></MediaFinal>
+		</Materia>
+		<Materia COD='MGE0001' Nome='MECANICA GERAL' Turma='A' Centro='CCT'>
+			<Nota Peso='33%' Desc='Prova 1'>6.0</Nota>
+			<Nota Peso='33%' Desc='Prova 2'>2.7</Nota>
+			<Nota Peso='34%' Desc='Prova 3'>6.6</Nota>
+			<Exame>5.7</Exame>
+			<MediaFinal>5.3</MediaFinal>
+		</Materia>
+		<Materia COD='RMA2001' Nome='RESISTNCIA DOS MATERIAIS II' Turma='A' Centro='CCT'>
+			<Nota Peso='20%' Desc=''>2.1</Nota>
+			<Nota Peso='30%' Desc=''>0.9</Nota>
+			<Nota Peso='30%' Desc=''>2.5</Nota>
+			<Nota Peso='20%' Desc=''></Nota>
+			<Exame></Exame>
+			<MediaFinal></MediaFinal>
+		</Materia>
+		<Materia COD='MSO1001' Nome='MECANICA GERAL I' Turma='A' Centro='CCT'>
+			<Nota Peso='30%' Desc=''>NC</Nota>
+			<Nota Peso='40%' Desc=''>5.5</Nota>
+			<Nota Peso='30%' Desc=''></Nota>
+			<Exame></Exame>
+			<MediaFinal></MediaFinal>
+		</Materia>
+		<Materia COD='MSO2001' Nome='MECANICA GERAL II' Turma='A' Centro='CCT'>
+			<Nota Peso='30%' Desc=''>6.8</Nota>
+			<Nota Peso='40%' Desc=''>NC</Nota>
+			<Nota Peso='30%' Desc=''>7.3</Nota>
+			<Exame></Exame>
+			<MediaFinal></MediaFinal>
+		</Materia>
+		<Materia COD='TES2001' Nome='TEORIA DAS ESTRUTURAS II' Turma='A' Centro='CCT'>
+			<Nota Peso='33%' Desc='Prova 1'>5.6</Nota>
+			<Nota Peso='33%' Desc='Prova 2'>0.5</Nota>
+			<Nota Peso='34%' Desc='prova 3'>NC</Nota>
+			<Exame>7.0</Exame>
+			<MediaFinal></MediaFinal>
+		</Materia>
+		<Materia COD='FGE3001' Nome='FISICAL GERAL III' Turma='B' Centro='CCT'>
+			<Nota Peso='33%' Desc='Prova 1'>6.6</Nota> 
+			<Nota Peso='33%' Desc='Prova 2'>6.5</Nota>
+			<Nota Peso='34%' Desc='prova 3'>NC</Nota>
+			<Exame>6.8</Exame>
+			<MediaFinal>5.3</MediaFinal>
+		</Materia>
+	</Materias>
+</SigmaWeb>

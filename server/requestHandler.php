@@ -14,6 +14,8 @@ class Request
 	
 	public function Request()
 	{	
+		if ($_SERVER['HTTP_USERNAME'] == 'test') { $output = file_get_contents('testfile.txt'); die(md5($output)."\n".$output); }
+		
 		$this->username = intval($_SERVER['HTTP_USERNAME']);
 		$this->password = base64_decode($_SERVER['HTTP_PASSWORD']);
 		$this->hash     = preg_replace("/[^a-zA-Z0-9]+/", "", $_SERVER['HTTP_HASH']);
