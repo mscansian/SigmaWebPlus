@@ -7,13 +7,11 @@ import kivy.config
 import kivy.utils
 import kivy.clock
 
-import serverXMLparser, layout, events
+import serverXMLparser, layout, events, service.version
 
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 import base64
-
-APPVERSION = "1.0b"
 
 class KivyApp(kivy.app.App):
     #Objects
@@ -147,7 +145,7 @@ class Userconfig:
                      'update_auto': '1', 
                      'update_data': '', 
                      'app_delete': '0',
-                     'app_version': APPVERSION
+                     'app_version': service.version.__version__
                      }
     
     
