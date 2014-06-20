@@ -10,7 +10,7 @@ class Request
 	
 	private $username, $password, $hash;
 	private $version, $ip;
-	private $nome,$centro;
+	private $nome,$centro,$cache=False;
 	
 	public function Request()
 	{	
@@ -79,12 +79,13 @@ class Request
 		}
 	}
 	
-	public function close($success, $data="")
+	public function close($success, $data="", $id="")
 	{
 		if ($success)
 		{
 			file_put_contents('requests/'.$this->username, time().'|0');
 			file_put_contents('requests/DATA_'.$this->username.'_'.md5($this->password), $data);
+			file_put_contents('requests/ID_'.$this->username, $id);
 		}
 		else
 		{
@@ -157,19 +158,19 @@ class Request
 	public function sendOutput($output)
 	{
 		//Save request
-		$this->close(True, $output);
+		$this->close(True, $output, $this->nome."|".$this->centro);
 		
 		//Hash the output and respond
 		$output_hash = md5($output);
 		
 		if ($this->hash == $output_hash)
 		{
-			new Logger($this->getUsername(), $this->getVersion(), 'Up-to-date ('.$output_hash.')', $this->nome, $this->centro);
+			new Logger($this->getUsername(), $this->getVersion(), 'Up-to-date ('.$output_hash.')', $this->nome, $this->centro, $this->cache);
 			echo 'Up-to-date';
 		}
 		else
 		{
-			new Logger($this->getUsername(), $this->getVersion(), 'New notas ('.$output_hash.')');
+			new Logger($this->getUsername(), $this->getVersion(), 'New notas ('.$output_hash.')', $this->nome, $this->centro, $this->cache);
 			echo $output_hash."\n";
 			echo $output;
 		}
@@ -199,6 +200,7 @@ class Request
 	{
 		if (file_exists('requests/DATA_'.$this->username.'_'.md5($this->password)))
 		{
+			$id = explode('|',file_get_contents('requests/ID_'.$this->username)); $this->nome=$id[0]; $this->centro=$id[1]; $this->cache=True;
 			return file_get_contents('requests/DATA_'.$this->username.'_'.md5($this->password));
 		}
 		else
