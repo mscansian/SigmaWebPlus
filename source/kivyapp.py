@@ -106,6 +106,8 @@ class KivyApp(kivy.app.App):
             cipher = PKCS1_OAEP.new(key)
             password = base64.b64encode(cipher.encrypt(password)) #Base64 eh utilizado pra evitar erros na hora de salvar/transmitir a senha (a internet nao suporta formato binario!)
             events.Events().trigger(events.EVENT_LOGIN, username, password)
+        elif eventType == "SwitchPanel":
+            self.GUI.setPanel(args[0])
     
     def on_event_reload(self, *args):
         pass #Todo: Colocar uma mensagem na tela de 'Carregando notas'

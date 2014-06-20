@@ -26,6 +26,7 @@
 		font_size: self.height/2*0.8
 		halign: 'left'
 
+
 <SigmaWebRefresh@AnchorLayout>
 	anchor_x: 'right'
 	width: btn.height
@@ -119,6 +120,7 @@
 	orientation: 'vertical'
 	header: obj_header
 	notas: obj_notas
+	cod: ''
 	
 	SigmaWebPageHeader:
 		id: obj_header
@@ -161,6 +163,8 @@
 	materias: obj_materias
 	lastupdate: obj_lastupdate
 	orientation: 'vertical'
+	cod: ''
+	deslize: obj_deslize
 	
 	BoxLayout:
 		orientation: 'vertical'
@@ -218,6 +222,7 @@
 				height: codigo.font_size*2.3
 			
 		Label:
+			id: obj_deslize
 			color: 0.18, 0.18, 0.18, 1
 			halign: 'center'
 			text: 'Deslize para ver detalhes\n\n|\n\\/'
@@ -275,8 +280,15 @@
 		id: obj_nota
 		size_hint: (0.25,1)
 
+<painelButton@Button>
+	on_press: app.event_converter('SwitchPanel', self.text)
+	background_color: 25*1.8/255.0, 117*1.8/255.0, 93*1.8/255.0, 1
+
+
 <screenMain>
 	paineis: obj_paineis
+	botoes: obj_botoes
+	holder: obj_holder
 	
 	canvas.before:
         Color:
@@ -286,10 +298,15 @@
             size: self.size
 	
 	BoxLayout:
+		id: obj_holder
 		orientation: 'vertical'
 		
 		SigmaWebLogo:
 			SigmaWebRefresh:
+		
+		BoxLayout:
+			size_hint: 1,0.1
+			id: obj_botoes
 		
 		Carousel:
 			id: obj_paineis

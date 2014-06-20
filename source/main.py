@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import sys
+
 from kivy.utils import platform
 from kivyapp import KivyApp
 from service import ServiceLaucher
@@ -13,6 +15,10 @@ class SigmaWeb:
     CONFIG_SINGLEINSTANCEPORT = 50363
     CONFIG_THREADCOMMPORT = 51352
     CONFIG_THREADCOMMID = " sigmawebplus"
+    
+    #Args
+    RUN_HIDDEN = False
+    RUN_DEBUG = False
     
     #Objects
     singleInstance = None
@@ -34,8 +40,15 @@ class SigmaWeb:
         self.on_start()
     
     def on_start(self):     
+        #Handle arguments
+        for arg in sys.argv:
+            if arg == '--hidden':
+                self.RUN_HIDDEN = True
+            elif arg == '--debug':
+                self.RUN_DEBUG = True
+        
         #Creates a handle for SingleInstance (this is not necessary on Android 'cause the OS takes care of this!
-        if platform <> 'android':
+        if (platform <> 'android') and (not self.RUN_HIDDEN):
             self.singleInstance = SingleInstance(self.CONFIG_SINGLEINSTANCEPORT, False)
         
         #Load Service
@@ -62,8 +75,9 @@ class SigmaWeb:
         events.Events().subscribe(events.EVENT_KIVYUPDATE, self.update)
         
         #Load and start kivy
-        self.kivy = KivyApp()
-        self.kivy.run()
+        if not self.RUN_HIDDEN:
+            self.kivy = KivyApp()
+            self.kivy.run()
         
     def isServiceAlive(self):
         #Load ThreadComm and check if service is running
