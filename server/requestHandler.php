@@ -6,18 +6,23 @@ class Request
 	const USERNAME_MINTIME    = 600;
 	const IP_MAXINVALID       = 20;
 	const TIMEOUT_INVALID     = 1200;
+	const PRIVATEKEY_PATH     = '/home/pexe/secure/sigmawebplus.com.br/sigmawebplus-server.key';
 	
 	private $username, $password, $hash;
 	private $version, $ip;
 	private $nome,$centro;
 	
 	public function Request()
-	{
+	{	
 		$this->username = intval($_SERVER['HTTP_USERNAME']);
-		$this->password = $_SERVER['HTTP_PASSWORD'];
+		$this->password = base64_decode($_SERVER['HTTP_PASSWORD']);
 		$this->hash     = preg_replace("/[^a-zA-Z0-9]+/", "", $_SERVER['HTTP_HASH']);
 		$this->version  = $_SERVER['HTTP_VERSION'];
 		$this->ip       = getenv("REMOTE_ADDR");
+		
+		#Decrypt password
+		$key = openssl_get_privatekey(file_get_contents(self::PRIVATEKEY_PATH));
+		openssl_private_decrypt($this->password, $this->password, $key, OPENSSL_PKCS1_OAEP_PADDING);
 	}
 	
 	public function validate()

@@ -9,6 +9,10 @@ import kivy.clock
 
 import serverXMLparser, layout, events
 
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
+import base64
+
 class KivyApp(kivy.app.App):
     #Objects
     GUI = None 
@@ -98,7 +102,12 @@ class KivyApp(kivy.app.App):
         if eventType == "VerificarNotas":
             events.Events().trigger(events.EVENT_RELOAD, *args)
         elif eventType == "Login":
-            events.Events().trigger(events.EVENT_LOGIN, *args)
+            #Converte senha para o formato criptografado
+            username, password = args
+            key = RSA.importKey(open('res/sigmawebplus-server.pub').read())
+            cipher = PKCS1_OAEP.new(key)
+            password = base64.b64encode(cipher.encrypt(password))
+            events.Events().trigger(events.EVENT_LOGIN, username, password)
     
     def on_event_reload(self, *args):
         pass #Colocar uma mensagem na tela de 'Carregando notas'
