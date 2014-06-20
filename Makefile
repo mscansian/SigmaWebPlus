@@ -107,3 +107,13 @@ createdist:
 
 .PHONY: install
 install: distclean install_venv install_pipmodules install_pythonforandroid createdist
+
+.PHONY: install_linux
+install_linux:
+	cat >teste.txt <<EOL
+	oie
+	isso 
+	eh um
+	EOL
+	
+	cat teste.txt
