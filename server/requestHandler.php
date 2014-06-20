@@ -40,8 +40,11 @@ class Request
 	private function updateValidationDB()
 	{
 		foreach (glob('requests/'."*") as $file) {
-			if (filemtime($file) < time() - self::TIMEOUT_INVALID) { 
-				unlink($file);
+			if ($file != 'requests/index.php')
+			{
+				if (filemtime($file) < time() - self::TIMEOUT_INVALID) { 
+					unlink($file);
+				}
 			}
 		}
 	}
