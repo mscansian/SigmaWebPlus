@@ -110,10 +110,14 @@ install: distclean install_venv install_pipmodules install_pythonforandroid crea
 
 .PHONY: install_linux
 install_linux:
-	cat >teste.txt <<EOL
-	oie
-	isso 
-	eh um
-	EOL
-	
-	cat teste.txt
+	rm -f sigmawebplus
+	sudo rm -r -f /usr/share/sigmawebplus
+	sudo rm -f /usr/local/sbin/sigmawebplus
+	printf "#!/bin/bash\ncd /usr/share/sigmawebplus/source\n/usr/share/sigmawebplus/venv/bin/python main.py" >> sigmawebplus
+	chmod +x sigmawebplus
+	sudo mkdir -p /usr/share/sigmawebplus
+	sudo cp -r source /usr/share/sigmawebplus
+	sudo cp -r venv /usr/share/sigmawebplus
+	sudo cp -r python-for-android /usr/share/sigmawebplus
+	sudo mv sigmawebplus /usr/local/sbin/
+	sudo updatedb
