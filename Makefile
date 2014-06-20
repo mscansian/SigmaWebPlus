@@ -61,6 +61,20 @@ logcat_all:
 	source env_var.sh; \
 	adb logcat *:I
 
+.PHONY: android_release
+android_release:
+	source env_var.sh; \
+	cd $(PYTHON_FOR_ANDROID_PACKAGE); \
+	$(PY) ./build.py --package $(APK_PACKAGE) --name $(APP_NAME) --version $(APK_VERSION) --orientation $(APK_ORIENTATION) --icon $(APK_ICON) --presplash $(APK_PRESPLASH) --dir $(PROJECT_DIR) $(APK_PERMISSIONS) --window release
+	make android_release_sign
+
+.PHONY: android_release_sign
+android_release_sign:
+	rm -f $(APK_FINAL)
+	jarsigner -verbose -sigalg MD5withRSA -digestalg SHA1 -keystore $(APK_KEYSTORE) $(APK_RELEASE) $(APK_ALIAS)
+	source env_var.sh; \
+	zipalign -v 4 $(APK_RELEASE) $(APK_FINAL)
+
 # Setup
 
 .PHONY: install_venv
@@ -93,17 +107,3 @@ createdist:
 
 .PHONY: install
 install: distclean install_venv install_pipmodules install_pythonforandroid createdist
-
-.PHONY: android_release
-android_release:
-	source env_var.sh; \
-	cd $(PYTHON_FOR_ANDROID_PACKAGE); \
-	$(PY) ./build.py --package $(APK_PACKAGE) --name $(APP_NAME) --version $(APK_VERSION) --orientation $(APK_ORIENTATION) --icon $(APK_ICON) --presplash $(APK_PRESPLASH) --dir $(PROJECT_DIR) $(APK_PERMISSIONS) --window release
-	make sign_android
-
-.PHONY: sign_android
-sign_android:
-	rm -f $(APK_FINAL)
-	jarsigner -verbose -sigalg MD5withRSA -digestalg SHA1 -keystore $(APK_KEYSTORE) $(APK_RELEASE) $(APK_ALIAS)
-	source env_var.sh; \
-	zipalign -v 4 $(APK_RELEASE) $(APK_FINAL)
