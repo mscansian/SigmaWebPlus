@@ -33,12 +33,14 @@ class GUI():
     
     def getWindow(self):
         return self.window.__class__
-      
+    
+    def setErrorMsg(self, msg):
+        if not (self.getWindow() == screenLogin): return False
+        self.window.errormsg.text = msg
+    
     def setNotas(self, alunoObject):
-        if not (self.getWindow() == screenMain):
-            return False
-        elif alunoObject == None: #Nao ha notas dispoiveis
-            return False
+        if not (self.getWindow() == screenMain): return False
+        elif alunoObject == None: return False #Nao ha notas dispoiveis
         
         pagina = self.window.paineis.index
         self.window.paineis.clear_widgets() #Deleta os paineis antigos
