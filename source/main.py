@@ -39,14 +39,17 @@ class SigmaWeb:
             self.singleInstance = SingleInstance(self.CONFIG_SINGLEINSTANCEPORT, False)
         
         #Load Service
+        print 'DEBUG: Loading service...'
         self.service = ServiceLaucher()
         serviceAlive = self.isServiceAlive()
         
         if (not serviceAlive):
+            print 'DEBUG: Service not alive. Starting...'
             #Start service
             self.service.start()
             
             #Connect Threadcomm
+            print 'DEBUG: Connecting ThreadCommClient...'
             while True: #
                 try: self.threadComm.start()
                 except ThreadCommException: pass
@@ -71,6 +74,7 @@ class SigmaWeb:
         try: self.threadComm.start()
         except ThreadCommException: return False #Service is not running
         else:
+            print 'DEBUG: Service is already up.. Sending "RFS" and waiting for a reply!'
             #Service is running. Get all info from server and ask to shutdown
             self.threadComm.sendMsg("RFS")
             self.oldServiceData = []
@@ -80,8 +84,10 @@ class SigmaWeb:
                 except ThreadCommException: pass
                 else:
                     if message[:3] == "RF1":
+                        print 'Got RF1!'
                         self.oldServiceData.append(message[4:]) #update_time: Last time the data was updated
                     elif message[:3] == "RF2":
+                        print 'Got RF2!'
                         self.oldServiceData.append(message[4:(32+4)]) #update_hash: The hash of last update
                         self.oldServiceData.append(message[(32+5):])  #update_data: The data of last update
                         return True #Service is running!
