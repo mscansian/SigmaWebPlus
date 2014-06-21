@@ -15,6 +15,7 @@ import kivy.uix.label
 import kivy.uix.textinput
 import kivy.uix.listview
 import kivy.utils
+from kivy.utils import platform
 
 import datetime
 
@@ -38,19 +39,33 @@ class GUI():
         if not (self.getWindow() == screenLogin): return False
         self.window.errormsg.text = msg
     
+    def setPanel(self, panel):
+        if not (self.getWindow() == screenMain): return False
+        for slide in self.window.paineis.slides: 
+            if slide.cod == panel: self.window.paineis.load_slide(slide)
+    
     def setNotas(self, alunoObject):
         if not (self.getWindow() == screenMain): return False
         elif alunoObject == None: return False #Nao ha notas dispoiveis
         
         pagina = self.window.paineis.index
         self.window.paineis.clear_widgets() #Deleta os paineis antigos
+        if (platform <> 'android'):
+            self.window.botoes.clear_widgets()
+        else:
+            try: self.window.botoes.parent.remove_widget(self.window.botoes)
+            except: pass
         
         #Cria a home page
         homePanel = SigmaWebHomePage()
         self.window.paineis.add_widget(homePanel)
         homePanel.dados.text = '[b]'+alunoObject.nome+'[/b]\n'+alunoObject.matricula+'\n'+alunoObject.centro
+        homePanel.cod = 'Aluno'
         homePanel.lastupdate.text = "Ultima atualizacao em "+str(datetime.datetime.fromtimestamp(float(alunoObject.time)).strftime('%d/%m/%y %H:%M'))
         homePanel.materias.height = 0 #Hack
+        if (platform <> 'android'):
+                self.window.botoes.add_widget(painelButton(text='Aluno'))
+                homePanel.deslize.text = ''
         for materia in alunoObject.materias:
             materiaLinha = Materia()
             homePanel.materias.add_widget(materiaLinha)
@@ -62,7 +77,11 @@ class GUI():
         for materia in alunoObject.materias:            
             painel = SigmaWebPage()
             painel.header.text = materia.get("Nome")+'\n[b]'+materia.get("Cod")+'[/b]'
-                      
+            painel.cod = materia.get("Cod")
+            
+            if (platform <> 'android'):
+                self.window.botoes.add_widget(painelButton(text=materia.get("Cod")))
+            
             if len(materia.get("Notas")) > 0:
                 painel.notas.clear_widgets()
                 painel.notas.height = 0 #Hack
@@ -123,4 +142,7 @@ class Nota(kivy.uix.boxlayout.BoxLayout):
     pass
 
 class Nota2(kivy.uix.boxlayout.BoxLayout):
+    pass
+
+class painelButton(kivy.uix.button.Button):
     pass
