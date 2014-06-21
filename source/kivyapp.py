@@ -118,6 +118,7 @@ class KivyApp(kivy.app.App):
     def on_event_wrongpassword(self, *args):
         self.userConfig.clearLogin()            
         self.GUI.setWindow(layout.screenLogin)
+        self.GUI.setErrorMsg('Matricula ou senha incorreta')
     
     def on_event_updatedata(self, *args):
         time, hash, data = args

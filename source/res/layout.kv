@@ -67,6 +67,7 @@
 	size_hint: .8, .8
 
 <screenLogin>
+	errormsg: obj_errormsg
 	BoxLayout:
 		orientation: 'vertical'
 		
@@ -95,13 +96,20 @@
 				id: senha
 				hint_text: "Senha"
 				password: True
-				on_text_validate: app.event_converter('Login', matricula.text, senha.text)
+				on_text_validate: obj_errormsg.text=''; app.event_converter('Login', matricula.text, senha.text)
 			
 			SigmaWebButton:
 				text: 'Entrar'
-				on_press: app.event_converter('Login', matricula.text, senha.text)
+				on_press: obj_errormsg.text=''; app.event_converter('Login', matricula.text, senha.text)
 			
-		Label:
+		BoxLayout:
+			orientation: 'vertical'
+			Label:
+				id: obj_errormsg
+				size_hint: 1, None
+				height: self.font_size * 2 * 2				
+				color: 0.8,0,0,1
+			Label:
 
 <SigmaWebPageHeader@Label>:
 	size_hint: 1, None
