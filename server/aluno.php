@@ -125,7 +125,7 @@ class Aluno
 					array_push($NotasAluno, array(Nome=>substr($Nota[0],1,-1), Peso=>$Nota[1]));
 				}
 				
-				$NotasAluno_Table = $XPATH->query("/html/body/table[2]/tr/td[contains(., '".utf8_encode(strtoupper($Nome))."')]/..")->item(0);
+				$NotasAluno_Table = $XPATH->query("/html/body/table[2]/tr/td[contains(., '".utf8_encode(strtoupper($this->dadosAluno['Nome']))."')]/..")->item(0);
 				for ($a=0; $a<=$NumLinhas-1;$a++)
 				{
 					for ($b=($a*5); ($b<=($a*5)+4) && ($b<=$NumNotas-4-$NumLinhas); $b++)
