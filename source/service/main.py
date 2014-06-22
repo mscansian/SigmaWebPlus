@@ -4,6 +4,7 @@
 import time, datetime
 
 import http, version
+from debug import Debug
 from kivy.utils import platform
 from notification_demo.components.notification import Notification
 from threadcomm.threadcomm import ThreadComm, ThreadCommServer
@@ -30,7 +31,9 @@ class Service():
                 }
     
     def run(self):
-        #print "Monitor: Started successfully"
+        Debug().enabled = True
+        
+        Debug().note("Service: Started successfully", "Service")
         
         #Start ThreadComm
         self.threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommServer)
@@ -56,18 +59,19 @@ class Service():
         
         #Stop service
         try: self.threadComm.sendMsg("DIE") #Warn app that the service is closing!
-        except: print "Service: Could not send DIE message to app"
+        except: Debug().error("Service: Could not send DIE message to app", "Service")
         self.threadComm.stop()
-        #print "Monitor: Killed successfully"
+        Debug().note("Service: Killed successfully", "Service")
     
     def kill(self):
         self.SIGTERM = True
     
     def check(self):
         try:
-            #print "Debug: Fetching data from server..."
+            Debug().note("Service: Fetching data from server...", "Service")
             fireNotification, serverResponse = self.sigmaWeb.check()
         except SigmaWebMonitorException as e:
+            Debug().warn("Service: SigmaWebMonitorException("+str(e)+")", "Service")
             if str(e)[1:15] == "Server error: ":
                 if (str(e)[15:-1] == 'Max incorrect login'):
                     Notification("Erro: Muitos logins incorretos","Tente novamente mais tarde").notify()
@@ -86,12 +90,11 @@ class Service():
                 try: self.threadComm.sendMsg("UTD "+str(self.userData['update_time']))
                 except: pass
             elif str(e) == "'Unable to fetch data from server'":
-                print "Service: Unable to fetch data from server"
+                pass
             else: raise
         else:           
             if serverResponse[33:(33+10)] <> "<SigmaWeb>":
-                print "Service: Server error"
-                print serverResponse
+                Debug().error("Service: Server error\n"+serverResponse, "Service")
             else:
                 try: self.threadComm.sendMsg("NNA "+str(self.userData['update_time'])+serverResponse)
                 except: pass

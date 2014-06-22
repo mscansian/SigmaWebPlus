@@ -9,6 +9,7 @@ from service import ServiceLaucher
 from service.threadcomm.threadcomm import ThreadComm, ThreadCommException, ThreadCommClient
 from singleinstance.singleinstance import SingleInstance
 import events 
+from service.debug import Debug
 
 class SigmaWeb:
     #Constants
@@ -46,24 +47,29 @@ class SigmaWeb:
                 self.RUN_HIDDEN = True
             elif arg == '--debug':
                 self.RUN_DEBUG = True
+                Debug().enabled = True
+                
+        
+        #Debug (ativa ele forever)
+        Debug().enabled = True
         
         #Creates a handle for SingleInstance (this is not necessary on Android 'cause the OS takes care of this!
         if (platform <> 'android') and (not self.RUN_HIDDEN):
             self.singleInstance = SingleInstance(self.CONFIG_SINGLEINSTANCEPORT, False)
         
         #Load Service
-        print 'DEBUG: Loading service...'
+        Debug().note('Loading service...')
         self.service = ServiceLaucher()
         serviceAlive = self.isServiceAlive()
         
         if (not serviceAlive):
-            print 'DEBUG: Service not alive. Starting...'
+            Debug().note('Service not alive. Starting...')
             #Start service
             self.service.start()
             
             #Connect Threadcomm
-            print 'DEBUG: Connecting ThreadCommClient...'
-            while True: #
+            Debug().note('Connecting ThreadCommClient...')
+            while True: #Todo: Colocar um timeout
                 try: self.threadComm.start()
                 except ThreadCommException: pass
                 else: break
@@ -86,9 +92,11 @@ class SigmaWeb:
         #Load ThreadComm and check if service is running
         self.threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommClient)
         try: self.threadComm.start()
-        except ThreadCommException: return False #Service is not running
+        except ThreadCommException as e: #Service is not running 
+            Debug().note(str(e))
+            return False 
         else:
-            print 'DEBUG: Service is already up.. Sending "RFS" and waiting for a reply!'
+            Debug().note('Service is already up.. Sending "RFS" and waiting for a reply!')
             #Service is running. Get all info from server and ask to shutdown
             self.threadComm.sendMsg("RFS")
             self.oldServiceData = []
@@ -98,10 +106,10 @@ class SigmaWeb:
                 except ThreadCommException: pass
                 else:
                     if message[:3] == "RF1":
-                        print 'Got RF1!'
+                        Debug().note('Got RF1!')
                         self.oldServiceData.append(message[4:]) #update_time: Last time the data was updated
                     elif message[:3] == "RF2":
-                        print 'Got RF2!'
+                        Debug().note('Got RF2!')
                         self.oldServiceData.append(message[4:(32+4)]) #update_hash: The hash of last update
                         self.oldServiceData.append(message[(32+5):])  #update_data: The data of last update
                         return True #Service is running!
@@ -114,9 +122,9 @@ class SigmaWeb:
         if platform <> 'android': self.singleInstance.kill()
         if shutdownService:
             try: self.threadComm.sendMsg("KIL")
-            except Exception as e: print "Warning [self.threadComm.sendMsg(\"KIL\")]: "+str(e)
+            except Exception as e: Debug().error("Warning [self.threadComm.sendMsg(\"KIL\")]: "+str(e))
             try: self.service.kill()
-            except Exception as e: print "Warning [self.service.kill()]: "+str(e)
+            except Exception as e: Debug().warn("Warning [self.service.kill()]: "+str(e))
         self.threadComm.stop()
     
     '''
@@ -143,7 +151,7 @@ class SigmaWeb:
             elif message[:3] == "UTD":
                 events.Events().trigger(events.EVENT_UPTODATE, message[4:])
             elif message[:3] == "ERR": #Erro no servidor
-                if message[4:] == "Auth error":
+                if (message[4:] == "Auth error") or (message[4:] =='Username or password blank'):
                     events.Events().trigger(events.EVENT_WRONGPASSWORD)
                 else:
                     events.Events().trigger(events.EVENT_SERVERERROR)
