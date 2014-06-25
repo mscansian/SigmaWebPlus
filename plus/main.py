@@ -21,6 +21,7 @@ from crypto import RSACrypto
 from service.version import __version__
 from service.debug import Debug
 from kivy.utils import platform
+from versioncompare import ProgramVersionGreater
 if platform=='android': from androidWrapper import AndroidWrapper
 
 class SigmaWeb():
@@ -45,7 +46,11 @@ class SigmaWeb():
     ''   KIVY CALLBACKS
     '''
     
-    def on_start(self):      
+    def on_start(self):   
+        if ProgramVersionGreater(__version__, self.userConfig.getConfig('app_version')): 
+            Debug().warn("Deletando configuracoes de versao antiga!")
+            self.userConfig.clearConfig()
+           
         if self.userConfig.getConfig('username') == '':
             self.GUI.setWindow(screenLogin)
         else:
@@ -117,7 +122,6 @@ class SigmaWeb():
                          }
         
         self.userConfig = UserConfig(config, defaultSection, defaultConfig)
-        self.userConfig.setConfig('app_version', __version__)
     
     def on_config_change(self, config, section, key, value):
         self.service.setKey(key, value)            

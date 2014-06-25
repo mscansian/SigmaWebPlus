@@ -158,7 +158,6 @@ class Service():
     Ele inicializa o service e depois conecta o ThreadComm com o service
     '''
     def _startService(self):
-        print " staaaaaaa"
         if (platform == 'android') and (self._forceThread==False): connectThread = False
         else: connectThread = True
         
