@@ -1,0 +1,24 @@
+[
+	{
+        "type": "title",
+        "title": "Cuidado!\nAlgumas configuracoes podem causar erros"
+    },
+    
+	{
+		"type": "bool",
+		"title": "Desabilitar on_pause()",
+		"desc": "Desabilita on_pause no Android",
+		"section": "Sigmauser",
+		"key": "debug_disablepause",
+		"true": "1" 
+	},
+	
+	{
+		"type": "bool",
+		"title": "Habilitar Toast",
+		"desc": "Habilita msg Toast no Android",
+		"section": "Sigmauser",
+		"key": "debug_toast",
+		"true": "1" 
+	}
+]
