@@ -11,7 +11,7 @@ from threadcomm.threadcomm import ThreadComm, ThreadCommServer
 
 class Service():
     CONFIG_THREADCOMMPORT = 51352
-    CONFIG_THREADCOMMID = " sigmawebplus"
+    CONFIG_THREADCOMMID = "sigmawebplus"
     
     #Objects
     threadComm = None
@@ -161,12 +161,12 @@ class SigmaWebMonitor:
         if response[:7] == "<error>":
             raise SigmaWebMonitorException("Server error: "+response[7:-8])
         elif response[:10] == "Up-to-date":
-            raise SigmaWebMonitorException("Data is already up to date")
-        
-        notification = not (self.hash == "")
-        self.hash = response[:32]
-        self.data = response
-        return notification, response
+            pass
+        elif response[33:(33+10)] == "<SigmaWeb>":
+            hash = response[:32]
+            data = response[33:]
+        else:
+            pass
     
     def enoughInfo(self):
         if (self.username == None) or (self.password==None) or (self.hash==None):

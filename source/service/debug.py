@@ -12,7 +12,7 @@ class Debug():
     ENDC     = '\033[0m'
     
     #Configuration
-    enabled = False
+    enabled = True
     
     def note(self, message, header="SigmaWeb"):
         if self.enabled: print self.OKGREEN + header + ": " + message + self.ENDC

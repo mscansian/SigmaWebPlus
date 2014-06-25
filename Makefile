@@ -1,7 +1,7 @@
 # Project settings
 SHELL := /bin/bash
 WD := $(shell pwd)
-PROJECT_DIR := $(WD)/source
+PROJECT_DIR := $(WD)/plus
 VENV := $(WD)/venv
 PY := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
