@@ -53,9 +53,9 @@ Dependências
 * [Android NDK](http://developer.android.com/tools/sdk/ndk/index.html) [(Licença)](http://creativecommons.org/licenses/by/2.5/)
 * [kivy](https://github.com/kivy/kivy) (incluso no Makefile) [(Licença)](https://github.com/kivy/kivy/blob/master/LICENSE)
 * [python-for-android](https://github.com/kivy/python-for-android) (incluso no Makefile) [(Licença)](https://github.com/kivy/python-for-android/blob/master/LICENSE)
-* [python-singleinstance](https://github.com/mscansian/python-singleinstance) (incluso no GIT como submodule) [(Licença)](https://github.com/mscansian/python-singleinstance/blob/master/LICENSE)
-* [python-threadcomm](https://github.com/mscansian/python-threadcomm) (incluso no GIT como submodule) [(Licença)](https://github.com/mscansian/python-threadcomm/blob/master/LICENSE)
-* [notification-demo](https://github.com/brousch/kivy-notification-demo) (incluso no código)
+* [python-singleinstance](https://github.com/mscansian/python-singleinstance) (incluso no GIT) [(Licença)](https://github.com/mscansian/python-singleinstance/blob/master/LICENSE)
+* [python-threadcomm](https://github.com/mscansian/python-threadcomm) (incluso no GIT) [(Licença)](https://github.com/mscansian/python-threadcomm/blob/master/LICENSE)
+* [notification-demo](https://github.com/brousch/kivy-notification-demo) (incluso no GIT)
 * [PyCrypto](https://www.dlitz.net/software/pycrypto/) (incluso no Makefile) [(Licença)](https://github.com/dlitz/pycrypto/blob/master/COPYRIGHT)
 * python-notify2 (incluso no Makefile)
 
