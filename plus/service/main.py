@@ -1,8 +1,9 @@
 from threadcomm import ThreadComm, ThreadCommException, ThreadCommServer
 from debug import Debug
-from time import time
+from time import time, sleep
 from http import Page, Header
 from datetime import datetime
+from notification.notification import Notification
 
 class MainService:
     CONFIG_THREADCOMMPORT = 51352
@@ -31,6 +32,7 @@ class MainService:
         while (self.SIGTERM==False):
             self.listen()
             if self.SIGSTRT: self.check()
+            sleep(0.1)
         
         try: self.threadComm.sendMsg("STOP")
         except: Debug().error("Unable to send ThreadComm message with 'STOP' signal in MainService.run()", "Service")
@@ -61,7 +63,7 @@ class MainService:
     
     def check(self):
         if (self.getKey('username') <> ''):
-            if (float(self.getKey('update_time'))+float(self.getKey('update_timeout')) < time()) or (self.getKey('update_force')=='1'):
+            if (float(self.getKey('update_time'))+float(self.getKey('update_timeout'))*60 < time()) or (self.getKey('update_force')=='1'):
                 Debug().note("Buscando notas no server...", "Service")
                 try:
                     pagina = Page("http://www.sigmawebplus.com.br/server/")
@@ -85,6 +87,7 @@ class MainService:
                     Debug().note("Resposta do server 'Up-to-date'", "Service")
                     self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
                 elif response[33:(33+10)] == "<SigmaWeb>":
+                    if self.getKey('update_hash') != '': Notification('Novos resultados disponiveis', "Atualizado as "+str(datetime.fromtimestamp(time()).strftime('%H:%M'))).notify()
                     hash = response[:32]
                     data = response[33:]
                     self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
