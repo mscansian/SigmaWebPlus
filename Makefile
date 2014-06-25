@@ -15,7 +15,7 @@ PY4A_MODULES := "plyer openssl pyjnius kivy lxml pycrypto"
 
 
 # Android settings
-APK_PACKAGE := com.drpexe.sigmawebplus
+APK_PACKAGE := org.drpexe.sigmawebplus
 APP_NAME := "SigmaWeb+"
 APK_NAME := SigmaWeb+
 APK_VERSION := "1.0.2"
@@ -25,7 +25,7 @@ APK_PRESPLASH := $(PROJECT_DIR)/res/sigmaweb_back.png
 APK_DEBUG := $(PYTHON_FOR_ANDROID_PACKAGE)/bin/$(APK_NAME)-$(APK_VERSION)-debug.apk
 APK_RELEASE := $(PYTHON_FOR_ANDROID_PACKAGE)/bin/$(APK_NAME)-$(APK_VERSION)-release-unsigned.apk
 APK_FINAL := $(WD)/release/$(APK_NAME).apk
-APK_KEYSTORE := ~/Dropbox/Pessoal/Backup/Android-Keys/com-drpexe-sigmawebplus-release-key.keystore
+APK_KEYSTORE := ~/Dropbox/Pessoal/Backup/Android-Keys/org-drpexe-sigmawebplus-release-key.keystore
 APK_ALIAS := sigmawebplus
 APK_PERMISSIONS = --permission INTERNET
 
