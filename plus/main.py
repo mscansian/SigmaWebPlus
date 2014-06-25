@@ -60,7 +60,7 @@ class SigmaWeb():
     
     def on_stop(self):
         self.userConfig.write()
-        self.service.stop((self.userConfig.getConfig('update_auto')=='0'))
+        self.service.stop(((self.userConfig.getConfig('update_auto')=='0') or (self.userConfig.getConfig('app_delete')=='1')))
         Debug().note("Aplicativo foi finalizado com sucesso!")
     
     def on_pause(self):
