@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from copy import copy, deepcopy
+
 '''
     config.py
     
@@ -22,21 +24,21 @@
 '''
 
 class UserConfig:
-    defaultSection = None
-    defaultConfig = None
+    _defaultSection = None
+    _defaultConfig = None
     kivyConfig = None
     
     '''
     Retorna o valor de uma chave especifica
     '''
     def getConfig(self, key):
-        return self.kivyConfig.get(self.defaultSection, key)
+        return self.kivyConfig.get(self._defaultSection, key)
     
     '''
     Seta o valor de uma chave especifica. Pode-se utilizar o parametro 'write' para atrasar o salvamento no disco
     '''
     def setConfig(self, key, value, write=False):
-        self.kivyConfig.set(self.defaultSection, key, value)
+        self.kivyConfig.set(self._defaultSection, key, value)
         if write: self.write()
     
     '''
@@ -59,13 +61,14 @@ class UserConfig:
     Restaura todas as configuracoes para o valor inicial
     '''
     def clearConfig(self):
-        self.setConfigs(self.defaultConfig)
+        self.setConfigs(self._defaultConfig)
+        self.write()
     
     '''
     Retorna uma lista contendo a key e valor de todas as chaves default
     '''
     def exportConfig(self):
-        return self.getConfigs(self.defaultConfig)
+        return self.getConfigs(self._defaultConfig)
     
     '''
     Salva os dados no disco
@@ -79,6 +82,6 @@ class UserConfig:
     
     def __init__(self, kivyConfig, defaultSection, defaultConfig):
         self.kivyConfig = kivyConfig
-        self.defaultSection = defaultSection
-        self.defaultConfig = defaultConfig
-        self.kivyConfig.setdefaults(self.defaultSection, self.defaultConfig)
+        self._defaultSection = defaultSection
+        self._defaultConfig = defaultConfig
+        self.kivyConfig.setdefaults(defaultSection, defaultConfig)

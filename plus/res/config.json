@@ -5,5 +5,17 @@
 		"desc": "Valor em minutos",
 		"section": "Sigmauser",
 		"key": "update_timeout"
+	},
+	{
+        "type": "title",
+        "title": "Sair do SigmaWeb+"
+    },
+    {
+		"type": "bool",
+		"title": "Deletar dados de acesso",
+		"desc": "Deletar dados e sair do app",
+		"section": "Sigmauser",
+		"key": "app_delete",
+		"true": "1" 
 	}
 ]

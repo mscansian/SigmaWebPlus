@@ -50,6 +50,7 @@ class SigmaWeb():
         if ProgramVersionGreater(__version__, self.userConfig.getConfig('app_version')): 
             Debug().warn("Deletando configuracoes de versao antiga!")
             self.userConfig.clearConfig()
+        self.userConfig.setConfig('app_delete', '0')
            
         if self.userConfig.getConfig('username') == '':
             self.GUI.setWindow(screenLogin)
@@ -117,14 +118,23 @@ class SigmaWeb():
                          'update_data'        : '', 
                          'update_msg'         : '',
                          'app_version'        : __version__,
+                         'app_delete'         : '0',
                          'debug_disablepause' : '1',
                          'debug_toast'        : '0'
                          }
         
         self.userConfig = UserConfig(config, defaultSection, defaultConfig)
-    
+        
     def on_config_change(self, config, section, key, value):
-        self.service.setKey(key, value)            
+        self.service.setKey(key, value)
+        if key == 'app_delete':
+            self.userConfig.setConfig('username', '')
+            self.userConfig.setConfig('password', '')
+            self.userConfig.setConfig('update_time', '0')
+            self.userConfig.setConfig('update_hash', '')
+            self.userConfig.setConfig('update_data', '')
+            self.userConfig.setConfig('update_msg', '')
+            self.kivyApp.stop()
     
     def on_event(self, *args):
         type = args[0]
@@ -134,6 +144,10 @@ class SigmaWeb():
             else:
                 self.userConfig.setConfig('username', username)
                 self.userConfig.setConfig('password', RSACrypto('res/sigmawebplus-server.pub').encrypt(password))
+                self.userConfig.setConfig('update_time', '0')
+                self.userConfig.setConfig('update_hash', '')
+                self.userConfig.setConfig('update_data', '')
+                self.userConfig.setConfig('update_msg', '')
                 self.service.start(self.userConfig.exportConfig(), (self.userConfig.getConfig('update_auto')=='0'))
                 self.GUI.setWindow(screenLoading)
                 self.GUI.setProperty("msg_loading", "[b]Aguarde[/b]\n\nRealizando login...")
