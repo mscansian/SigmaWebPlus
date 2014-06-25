@@ -21,7 +21,7 @@ from crypto import RSACrypto
 from service.version import __version__
 from service.debug import Debug
 from kivy.utils import platform
-from androidWrapper import AndroidWrapper
+if platform=='android': from androidWrapper import AndroidWrapper
 
 class SigmaWeb():
     userConfig = None
@@ -145,11 +145,11 @@ class SigmaWeb():
                 if (value == '0') and ((self.service.getState() == STATE_CONNECTEDREMOTE) or (self.service.getState() == STATE_CONNECTEDANDROID)):
                     self.service.stop()
                     self.service.start(self.userConfig.exportConfig(), True)
-                    if self.userConfig.getConfig('debug_toast')=='1': AndroidWrapper().Toast('Monitor de notas desativado')
+                    if (platform=='android') and (self.userConfig.getConfig('debug_toast')=='1'): AndroidWrapper().Toast('Monitor de notas desativado')
                 elif (value == '1') and (self.service.getState() == STATE_CONNECTEDTHREAD):
                     self.service.stop()
                     self.service.start(self.userConfig.exportConfig())
-                    if self.userConfig.getConfig('debug_toast')=='1': AndroidWrapper().Toast('Monitor de notas ativado')
+                    if (platform=='android') and (self.userConfig.getConfig('debug_toast')=='1'): AndroidWrapper().Toast('Monitor de notas ativado')
         
 if __name__ == '__main__':
     SigmaWeb()
