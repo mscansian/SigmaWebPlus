@@ -76,7 +76,7 @@ class SigmaWeb():
     
     def on_update(self, *args):
         keys = self.service.getKeys()
-        if keys <> None:
+        if keys is not None:
             for keypair in keys:
                 key, value = keypair
                 self.userConfig.setConfig(key, value)
@@ -91,6 +91,14 @@ class SigmaWeb():
                         self.service.stop()
                         self.GUI.setProperty('msg_error', 'Login ou senha incorreto')
                         self.GUI.setWindow(screenLogin)
+                elif key == 'app_delete':
+                    self.userConfig.setConfig('username', '')
+                    self.userConfig.setConfig('password', '')
+                    self.userConfig.setConfig('update_time', '0')
+                    self.userConfig.setConfig('update_hash', '')
+                    self.userConfig.setConfig('update_data', '')
+                    self.userConfig.setConfig('update_msg', '')
+                    self.kivyApp.stop()
                     
         
         if self.GUI.getWindow() <> screenMain:
@@ -135,6 +143,9 @@ class SigmaWeb():
             self.userConfig.setConfig('update_data', '')
             self.userConfig.setConfig('update_msg', '')
             self.kivyApp.stop()
+        elif key == 'update_timeout':
+            if int(value) < 30:
+                self.userConfig.setConfig('update_timeout', '30')
     
     def on_event(self, *args):
         type = args[0]

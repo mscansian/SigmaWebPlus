@@ -47,6 +47,7 @@ class Service():
     _forceThread = None
     _androidTrigger = False #Hack: O service do Android soh pode ser aberto pelo main thread. Uso essa flag para avisar o main thread a hora de abrir
     _androidService = None #Guarda do ponteiro do Android Service, para poder fechar depois
+    _reconnections = 0
     
     #Objetos
     _threadComm = None #Ponteiro para o objeto do ThreadComm (utilizado para se comunicar com o service)
@@ -121,7 +122,7 @@ class Service():
             
             #Faz o parse da mensagem recebida e, se o valor retornado não for nulo, adiciona na returnData
             data = self._parseMessage(message)
-            if data <> None: returnData.append(data)
+            if data is not None: returnData.append(data)
         
         return returnData
     
@@ -215,6 +216,19 @@ class Service():
             notificationObject = Notification(*notificationMsg)
             notificationObject.enableActivity = True #O notification normalmente funciona no Service, isso serve para mudar o modo para Activity
             notificationObject.notify()
+        elif message[:4] == "STOP": #O Service foi finalizado de forma inesperada
+            data = self._data
+            forceThread = self._forceThread
+            self._stop(False)
+                
+            self._reconnections += 1
+            if self._reconnections <= 2:
+                Debug().error('Service finalizado de forma inesperada. Tentando reiniciar! [Tentantiva: '+str(self._reconnections)+']')
+                self.start(data, forceThread)
+            else:
+                Debug().error('Service finalizado de forma inesperada. Numero maximo de reconexoes excedido')
+                Debug().warn('O applicativo esta sendo fechado de forma forcada')
+                return ['app_delete', '1']
     
     '''
     Metodo privado que envia para o service a KEY especificada, no formato especificado

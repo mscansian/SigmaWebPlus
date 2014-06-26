@@ -1,11 +1,16 @@
-from threadcomm import ThreadComm, ThreadCommException, ThreadCommServer
-from debug import Debug
-from time import time, sleep
-from http import Page, Header
-from datetime import datetime
-from notification.notification import Notification
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 from threading import Thread
+from time import time, sleep
+from datetime import datetime
+
 from kivy.utils import platform
+from threadcomm import ThreadComm, ThreadCommException, ThreadCommServer
+from notification.notification import Notification
+
+from debug import Debug
+from http import Page, Header
 
 class MainService:
     CONFIG_THREADCOMMPORT = 51352
@@ -16,7 +21,7 @@ class MainService:
     data = None
     
     '''
-    Essas variaveis sao utilizadas para o service avisar o main thread para alncar uma notification
+    Essas variaveis sao utilizadas para o service avisar o main thread para lancar uma notification
     Nota: No android soh o main thread pode fazer notification
     '''
     androidService = False
@@ -38,14 +43,21 @@ class MainService:
     def run(self):
         self.init()
         
+        '''
+        Main loop do Sevice. O objetivo do try/except é se algum erro acontecer, ele limpa
+            a memoria e então da re-raise
+        '''
         while (self.SIGTERM==False):
-            self.listen()
-            if self.SIGSTRT: self.check()
-            sleep(0.1)
+            try:
+                self.listen()
+                if self.SIGSTRT: self.check()
+                sleep(0.1)
+            except:
+                Debug().error("Erro fatal! Tentando limpar a memória antes de sair...", "Service")                
+                self._cleanResources()
+                raise
         
-        try: self.threadComm.sendMsg("STOP")
-        except: Debug().error("Unable to send ThreadComm message with 'STOP' signal in MainService.run()", "Service")
-        self.threadComm.stop()
+        self._cleanResources()
         Debug().note("Ended successfully", "Service")
     
     def listen(self):
@@ -72,6 +84,7 @@ class MainService:
     
     def check(self):
         if (self.getKey('username') <> ''):
+            if (int(self.getKey('update_timeout')) < 30): self.setKey('update_timeout', '30') 
             if (float(self.getKey('update_time'))+float(self.getKey('update_timeout'))*60 < time()) or (self.getKey('update_force')=='1'):
                 Debug().note("Buscando notas no server...", "Service")
                 try:
@@ -135,7 +148,12 @@ class MainService:
         length = str(len(key)).zfill(2)
         try: self.threadComm.sendMsg("SKEY"+length+key+value)
         except: Debug().warn("Unable to send ThreadComm message with key '"+key+"' in MainService._sendKey()", "Service")
-                
+    
+    def _cleanResources(self):
+        try: self.threadComm.sendMsg("STOP")
+        except: Debug().error("Unable to send ThreadComm message with 'STOP' signal in MainService.run()", "Service")
+        self.threadComm.stop()
+    
 if __name__ == '__main__':
     ''' 
     O service no android roda no main thread. O objetivo do codigo abaixo eh forcar ele
