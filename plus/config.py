@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from copy import copy, deepcopy
-
 '''
     config.py
     
