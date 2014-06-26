@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from types import *
 from threading import Thread
 from time import time, sleep
 from datetime import datetime
@@ -81,48 +82,54 @@ class MainService:
                 self.SIGTERM = True
             elif message[:4] == "STRT": #Start service
                 self.SIGSTRT = True
+                self.threadComm.sendMsg("STRT")
     
     def check(self):
-        if (self.getKey('username') <> ''):
-            if (int(self.getKey('update_timeout')) < 30): self.setKey('update_timeout', '30') 
-            if (float(self.getKey('update_time'))+float(self.getKey('update_timeout'))*60 < time()) or (self.getKey('update_force')=='1'):
-                Debug().note("Buscando notas no server...", "Service")
-                try:
-                    pagina = Page("http://www.sigmawebplus.com.br/server/")
-                    pagina.set_RequestHeaders(Header("username", self.getKey('username')), Header("password", self.getKey('password')), Header("hash", self.getKey('update_hash')), Header("version", self.getKey('app_version')))
-                    pagina.Refresh()
-                    response = pagina.get_ResponseData()
-                except: response = ''
-                if self.getKey('update_force') == '1': self.setKey('update_force', '0')
-                
-                if response[:7] == "<error>":
-                    error = response[7:-8]
-                    Debug().warn("Resposta do server error('"+error+"')", "Service")
-                    if (error == "Auth error") or (error == "Username or password blank"):
-                        self.setKey('username', '')
-                        self.setKey('password', '')
-                        self.setKey('update_time', '0')
-                        return False
-                    else:
-                        self.setKey('update_msg', "Erro: Tente novamente mais tarde")
-                elif response[:10] == "Up-to-date":
-                    Debug().note("Resposta do server 'Up-to-date'", "Service")
-                    self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
-                elif response[33:(33+10)] == "<SigmaWeb>":
-                    hash = response[:32]
-                    data = response[33:]
-                    self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
-                    self.setKey('update_hash', hash)
-                    self.setKey('update_data', data)
-                    Debug().note("Resposta do server '"+hash+"'", "Service")
-                    
-                    if self.getKey('update_hash') != '': #Se esta nao eh a primeira vez que o usuario busca nota
-                        self._notify()
+        update_timeout = float(self.getKey('update_timeout'))
+        update_time = float(self.getKey('update_time'))
+        if (update_timeout < 30): self.setKey('update_timeout', '30')
+        
+        shouldCheck = ((update_time+update_timeout*60 < time()) or (self.getKey('update_force')=='1')) and (self.getKey('username') <> '') 
+        if shouldCheck:
+            if self.getKey('update_force') == '1': self.setKey('update_force', '0')
+            
+            Debug().note("Buscando notas no server...", "Service")
+            try:
+                pagina = Page("http://www.sigmawebplus.com.br/server/")
+                pagina.set_RequestHeaders(Header("username", self.getKey('username')), Header("password", self.getKey('password')), Header("hash", self.getKey('update_hash')), Header("version", self.getKey('app_version')))
+                pagina.Refresh()
+                response = pagina.get_ResponseData()
+            except: response = ''
+            assert type(response) is StringType
+            
+            if response[:7] == "<error>":
+                error = response[7:-8]
+                Debug().warn("Resposta do server error('"+error+"')", "Service")
+                if (error == "Auth error") or (error == "Username or password blank"):
+                    self.setKey('username', '')
+                    self.setKey('password', '')
+                    self.setKey('update_time', '0')
+                    return False
                 else:
-                    Debug().error("Erro ao requisitar notas!", "Service")
                     self.setKey('update_msg', "Erro: Tente novamente mais tarde")
+            elif response[:10] == "Up-to-date":
+                Debug().note("Resposta do server 'Up-to-date'", "Service")
+                self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
+            elif response[33:(33+10)] == "<SigmaWeb>":
+                hash = response[:32]
+                data = response[33:]
+                self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
+                self.setKey('update_hash', hash)
+                self.setKey('update_data', data)
+                Debug().note("Resposta do server '"+hash+"'", "Service")
                 
-                self.setKey('update_time', time())
+                if self.getKey('update_hash') != '': #Se esta nao eh a primeira vez que o usuario busca nota
+                    self._notify()
+            else:
+                Debug().error("Erro ao requisitar notas!", "Service")
+                self.setKey('update_msg', "Erro: Tente novamente mais tarde")
+            
+            self.setKey('update_time', time())
     
     def getKey(self, key):
         try: value = str(self.data[key])
@@ -135,12 +142,22 @@ class MainService:
     
     def _notify(self):
         notificationMsg = ['Novos resultados disponiveis', "Atualizado as "+str(datetime.fromtimestamp(time()).strftime('%H:%M'))]
-        if platform != 'android': Notification(*notificationMsg).notify()
+        if platform != 'android': 
+            Notification(*notificationMsg).notify()
         else:
-            if self.androidService: self.notificationMsg = notificationMsg
-            else:
+            '''
+            O android tem algumas frescuras em relacao a API de notificacoes:
+                A notificacao soh pode ser chamada pelo main thread e existe libs diferentes para quando
+                um service ou uma activity chama a notificacao
+            O codigo abaixo verifica se este objeto esta sendo executado como service do android ou thread
+                Se for um service do android. Ele seta uma flag para o main thread do service chamar a notificacao
+                Se for um thread comum, ele manda uma mensagem (NOTI) para o main thread do app chamar a notificacao
+            '''
+            if not self.androidService: 
                 try: self.threadComm.sendMsg("NOTI"+notificationMsg[0]+"|"+notificationMsg[1])
                 except: Debug().warn("Unable to send ThreadComm message with notification request in MainService._notify()", "Service")
+            else:
+                self.notificationMsg = notificationMsg
     
     def _sendKey(self, key):
         try: value = str(self.data[key])

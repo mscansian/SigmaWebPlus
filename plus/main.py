@@ -13,6 +13,8 @@
         XXX
 '''
 
+from kivy.utils import platform
+
 from kivyapp import KivyApp
 from layout import GUI, screenLogin, screenMain, screenLoading
 from config import UserConfig
@@ -20,7 +22,6 @@ from service import Service, STATE_CONNECTEDTHREAD, STATE_CONNECTEDANDROID, STAT
 from crypto import RSACrypto
 from service.version import __version__
 from service.debug import Debug
-from kivy.utils import platform
 from versioncompare import ProgramVersionGreater
 if platform=='android': from android_api import AndroidWrapper
 
@@ -167,6 +168,7 @@ class SigmaWeb():
         elif type == 'SwitchPanel':
             pass
         elif type == 'ServiceToggle':
+            if (platform == 'android') and (not self.service.isAlive()): return False
             type, value = args
             self.userConfig.setConfig('update_auto', str(value)) #Atualiza arquivo de config
             self.service.setKey('update_auto', str(value))       #Atualiza service
@@ -179,6 +181,8 @@ class SigmaWeb():
                     self.service.stop()
                     self.service.start(self.userConfig.exportConfig())
                     if (platform=='android') and (self.userConfig.getConfig('debug_toast')=='1'): AndroidWrapper().Toast('Monitor de notas ativado')
+            return True
+                    
         
 if __name__ == '__main__':
     SigmaWeb()

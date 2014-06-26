@@ -81,7 +81,7 @@
 		if self.btn_state == '1': self.btn_state = '0';
 		else: self.btn_state = '1';
 		self.overlay = 0.6
-		app.on_event(self.eventname, self.btn_state)
+		if app.on_event(self.eventname, self.btn_state) == False: self.btn_state = str(abs(int(self.btn_state)-1))
 	on_btn_state:
 		if self.btn_state == '0': self.img_src = self.img_src1
 		else: self.img_src = self.img_src2

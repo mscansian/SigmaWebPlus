@@ -53,7 +53,7 @@ class KivyApp(App):
         self.parent.on_config_change(config, section, key, value)
     
     def on_event(self, *args):
-        self.parent.on_event(*args)
+        return self.parent.on_event(*args)
 
 class KivyAppException(Exception):
     def __init__(self, value):

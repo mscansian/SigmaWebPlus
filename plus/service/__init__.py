@@ -26,6 +26,7 @@ from threading import Thread
 from kivy.utils import platform
 from debug import Debug
 from notification.notification import Notification
+from time import sleep, time
 
 #Import project files
 from threadcomm import ThreadComm, ThreadCommException, ThreadCommClient
@@ -47,7 +48,7 @@ class Service():
     _forceThread = None
     _androidTrigger = False #Hack: O service do Android soh pode ser aberto pelo main thread. Uso essa flag para avisar o main thread a hora de abrir
     _androidService = None #Guarda do ponteiro do Android Service, para poder fechar depois
-    _reconnections = 0
+    _lastDisconnection = 0 #Essa variavel serve para ter um timeout de 5 segundos entre cada reconexao
     
     #Objetos
     _threadComm = None #Ponteiro para o objeto do ThreadComm (utilizado para se comunicar com o service)
@@ -58,7 +59,7 @@ class Service():
     Nota: Se o service já existir, os dados serão sobreescritos em favor dos dados do service
     '''
     def start(self, data, forceThread=False):
-        if self.getState() == STATE_NOTSTARTED:
+        if (self.getState() == STATE_NOTSTARTED):
             Debug().note('service.start()')
             self._data = data #Salva dados no objeto
             self._forceThread = forceThread
@@ -140,6 +141,10 @@ class Service():
     '''
     def _start(self):
         Debug().note('service._start()')
+        
+        while not (self._lastDisconnection+1 < time()):
+            sleep(0.1)
+        
         self._threadComm = ThreadComm(self.CONFIG_THREADCOMMPORT, self.CONFIG_THREADCOMMID, ThreadCommClient)
         try: self._threadComm.start()
         except ThreadCommException as e: #Servico nao esta rodando
@@ -184,6 +189,14 @@ class Service():
         for key in self._data:
             self._sendKey(key)
         self._threadComm.sendMsg("STRT") #Sinal para o Service iniciar
+        
+        #Aguarda a resposta do service
+        Debug().note('service._startService(): Aguardando o service ser iniciado')
+        message = None
+        while message != 'STRT':
+            try: message = self._threadComm.recvMsg()
+            except: pass
+        
         if connectThread: self._state = STATE_CONNECTEDTHREAD
         else: self._state = STATE_CONNECTEDANDROID
     
@@ -217,18 +230,9 @@ class Service():
             notificationObject.enableActivity = True #O notification normalmente funciona no Service, isso serve para mudar o modo para Activity
             notificationObject.notify()
         elif message[:4] == "STOP": #O Service foi finalizado de forma inesperada
-            data = self._data
-            forceThread = self._forceThread
-            self._stop(False)
-                
-            self._reconnections += 1
-            if self._reconnections <= 2:
-                Debug().error('Service finalizado de forma inesperada. Tentando reiniciar! [Tentantiva: '+str(self._reconnections)+']')
-                self.start(data, forceThread)
-            else:
-                Debug().error('Service finalizado de forma inesperada. Numero maximo de reconexoes excedido')
-                Debug().warn('O applicativo esta sendo fechado de forma forcada')
-                return ['app_delete', '1']
+            self._stop(False, True)
+            Debug().error('Service finalizado de forma inesperada. O applicativo esta sendo fechado de forma forcada')
+            return ['app_delete', '1']
     
     '''
     Metodo privado que envia para o service a KEY especificada, no formato especificado
@@ -265,20 +269,31 @@ class Service():
     '''
     Funcao privada para parar o service (ela nao faz checks se o service foi iniciado. Isso eh trabalho da funcao publica)
     '''
-    def _stop(self, killService=True):
+    def _stop(self, killService=True, forceKillAndroid=False):
         if killService: 
             self._threadComm.sendMsg("KILL") #Manda o sinal para o service terminar
             
-            #Aguarda a resposta do service
+            '''
+            A maneira que esta funcao verifica se o service foi desconectado eh a seguinte:
+                1) Espera o service mandar uma mensagem STOP (avisando que está quase sendo desligado)
+                2) Flooda o service com mensagens NULL, ateh que elas comecem a retornar erro
+            '''
             Debug().note('service.stop(): Aguardando o service ser desligado')
             message = None
             while message != 'STOP':
                 try: message = self._threadComm.recvMsg()
                 except: pass
+            
+            while True:
+                try: self._threadComm.sendMsg("NULL")
+                except: break
+                sleep(0.1)
         
         #Limpa a memoria e limpa o estado do objeto
         self._threadComm.stop()
-        if killService: self._stopAndroid()
+        if killService or forceKillAndroid: self._stopAndroid()
         self._data = None
         self._threadComm = None
         self._state = STATE_NOTSTARTED
+        self._lastDisconnection = time()
+        
