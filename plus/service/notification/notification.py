@@ -19,21 +19,26 @@ class NotificationBase():
 
 
 class NotificationAndroid(NotificationBase):
+    enableActivity = False
+    
     def notify(self):
         ''' Displays a native Android notification '''
         from jnius import autoclass
         AndroidString = autoclass('java.lang.String')
-        PythonActivity = autoclass('org.renpy.android.PythonActivity')
+        if self.enableActivity: PythonActivity = autoclass('org.renpy.android.PythonActivity')
+        else: PythonActivity = autoclass('org.renpy.android.PythonService')
         NotificationBuilder = autoclass('android.app.Notification$Builder')
-        Drawable = autoclass('net.clusterbleep.notificationdemo.R$drawable')
+        Drawable = autoclass('org.drpexe.sigmawebplus.R$drawable')
         icon = Drawable.icon
-        noti = NotificationBuilder(PythonActivity.mActivity)
+        if self.enableActivity: noti = NotificationBuilder(PythonActivity.mActivity)
+        else:noti = NotificationBuilder(PythonActivity.mService)
         #noti.setDefaults(Notification.DEFAULT_ALL)
         noti.setContentTitle(AndroidString(self.title.encode('utf-8')))
         noti.setContentText(AndroidString(self.message.encode('utf-8')))
         noti.setSmallIcon(icon)
         noti.setAutoCancel(True)
-        nm = PythonActivity.mActivity.getSystemService(PythonActivity.NOTIFICATION_SERVICE)
+        if self.enableActivity: nm = PythonActivity.mActivity.getSystemService(PythonActivity.NOTIFICATION_SERVICE)
+        else: nm = PythonActivity.mService.getSystemService(PythonActivity.NOTIFICATION_SERVICE)
         nm.notify(0,noti.build())
 
 

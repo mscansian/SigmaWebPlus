@@ -4,6 +4,8 @@ from time import time, sleep
 from http import Page, Header
 from datetime import datetime
 from notification.notification import Notification
+from threading import Thread
+from kivy.utils import platform
 
 class MainService:
     CONFIG_THREADCOMMPORT = 51352
@@ -12,6 +14,13 @@ class MainService:
     SIGTERM = False
     SIGSTRT = False
     data = None
+    
+    '''
+    Essas variaveis sao utilizadas para o service avisar o main thread para alncar uma notification
+    Nota: No android soh o main thread pode fazer notification
+    '''
+    androidService = False
+    notificationMsg = None 
     
     threadComm = None
     
@@ -87,13 +96,15 @@ class MainService:
                     Debug().note("Resposta do server 'Up-to-date'", "Service")
                     self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
                 elif response[33:(33+10)] == "<SigmaWeb>":
-                    if self.getKey('update_hash') != '': Notification('Novos resultados disponiveis', "Atualizado as "+str(datetime.fromtimestamp(time()).strftime('%H:%M'))).notify()
                     hash = response[:32]
                     data = response[33:]
                     self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
                     self.setKey('update_hash', hash)
                     self.setKey('update_data', data)
                     Debug().note("Resposta do server '"+hash+"'", "Service")
+                    
+                    if self.getKey('update_hash') != '': #Se esta nao eh a primeira vez que o usuario busca nota
+                        self._notify()
                 else:
                     Debug().error("Erro ao requisitar notas!", "Service")
                     self.setKey('update_msg', "Erro: Tente novamente mais tarde")
@@ -109,6 +120,15 @@ class MainService:
         self.data[key] = str(value)
         self._sendKey(key)
     
+    def _notify(self):
+        notificationMsg = ['Novos resultados disponiveis', "Atualizado as "+str(datetime.fromtimestamp(time()).strftime('%H:%M'))]
+        if platform != 'android': Notification(*notificationMsg).notify()
+        else:
+            if self.androidService: self.notificationMsg = notificationMsg
+            else:
+                try: self.threadComm.sendMsg("NOTI"+notificationMsg[0]+"|"+notificationMsg[1])
+                except: Debug().warn("Unable to send ThreadComm message with notification request in MainService._notify()", "Service")
+    
     def _sendKey(self, key):
         try: value = str(self.data[key])
         except: value = ''
@@ -117,4 +137,23 @@ class MainService:
         except: Debug().warn("Unable to send ThreadComm message with key '"+key+"' in MainService._sendKey()", "Service")
                 
 if __name__ == '__main__':
-    MainService().run()
+    ''' 
+    O service no android roda no main thread. O objetivo do codigo abaixo eh forcar ele
+    a rodar em um thread separado
+    '''
+    serviceObject = MainService()
+    serviceObject.androidService = True
+    serviceThread = Thread(target=serviceObject.run, name='MainService')
+    serviceThread.start()
+    
+    '''
+    Continua funcionando ateh que o Thread seja finalizado
+    Isso eh necessario pq o Android soh deixa o Main Thread fazer notificacoes.
+    O codigo dentro do loop cuida disso
+    '''
+    while serviceThread.is_alive():
+        if serviceObject.notificationMsg is not None: 
+            Notification(*serviceObject.notificationMsg).notify()
+            serviceObject.notificationMsg = None
+            
+    

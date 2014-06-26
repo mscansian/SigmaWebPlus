@@ -25,6 +25,7 @@
 from threading import Thread
 from kivy.utils import platform
 from debug import Debug
+from notification.notification import Notification
 
 #Import project files
 from threadcomm import ThreadComm, ThreadCommException, ThreadCommClient
@@ -209,6 +210,11 @@ class Service():
         elif message[:4] == "AKEY": #Get all keys
             for key in self.data:
                 self._sendKey(key)
+        elif message[:4] == "NOTI": #Send a notification
+            notificationMsg = message[4:].split("|")
+            notificationObject = Notification(*notificationMsg)
+            notificationObject.enableActivity = True #O notification normalmente funciona no Service, isso serve para mudar o modo para Activity
+            notificationObject.notify()
     
     '''
     Metodo privado que envia para o service a KEY especificada, no formato especificado
