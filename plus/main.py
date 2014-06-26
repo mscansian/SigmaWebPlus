@@ -22,7 +22,7 @@ from service.version import __version__
 from service.debug import Debug
 from kivy.utils import platform
 from versioncompare import ProgramVersionGreater
-if platform=='android': from androidWrapper import AndroidWrapper
+if platform=='android': from android_api import AndroidWrapper
 
 class SigmaWeb():
     userConfig = None
