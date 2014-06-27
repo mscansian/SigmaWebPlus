@@ -122,13 +122,13 @@ class SigmaWeb():
                          'update_timeout'     : '180', 
                          'update_time'        : '0', 
                          'update_hash'        : '', 
-                         'update_auto'        : '0',
+                         'update_auto'        : '1',
                          'update_force'       : '0', 
                          'update_data'        : '', 
                          'update_msg'         : '',
                          'app_version'        : __version__,
                          'app_delete'         : '0',
-                         'debug_disablepause' : '1',
+                         'debug_disablepause' : '0',
                          'debug_toast'        : '0'
                          }
         
@@ -147,6 +147,8 @@ class SigmaWeb():
         elif key == 'update_timeout':
             if int(value) < 30:
                 self.userConfig.setConfig('update_timeout', '30')
+        elif key == 'update_auto':
+            if (self._toggleService(value)): self.GUI.setProperty('update_auto', value)
     
     def on_event(self, *args):
         type = args[0]
@@ -168,20 +170,23 @@ class SigmaWeb():
         elif type == 'SwitchPanel':
             pass
         elif type == 'ServiceToggle':
-            if (platform == 'android') and (not self.service.isAlive()): return False
             type, value = args
-            self.userConfig.setConfig('update_auto', str(value)) #Atualiza arquivo de config
-            self.service.setKey('update_auto', str(value))       #Atualiza service
-            if self.service.isAlive() and (platform == 'android'):
-                if (value == '0') and ((self.service.getState() == STATE_CONNECTEDREMOTE) or (self.service.getState() == STATE_CONNECTEDANDROID)):
-                    self.service.stop()
-                    self.service.start(self.userConfig.exportConfig(), True)
-                    if (platform=='android') and (self.userConfig.getConfig('debug_toast')=='1'): AndroidWrapper().Toast('Monitor de notas desativado')
-                elif (value == '1') and (self.service.getState() == STATE_CONNECTEDTHREAD):
-                    self.service.stop()
-                    self.service.start(self.userConfig.exportConfig())
-                    if (platform=='android') and (self.userConfig.getConfig('debug_toast')=='1'): AndroidWrapper().Toast('Monitor de notas ativado')
-            return True
+            return self._toggleService(value)
+    
+    def _toggleService(self, value):
+        if (platform == 'android') and (not self.service.isAlive()): return False
+        self.userConfig.setConfig('update_auto', str(value)) #Atualiza arquivo de config
+        self.service.setKey('update_auto', str(value))       #Atualiza service
+        if self.service.isAlive() and (platform == 'android'):
+            if (value == '0') and ((self.service.getState() == STATE_CONNECTEDREMOTE) or (self.service.getState() == STATE_CONNECTEDANDROID)):
+                self.service.stop()
+                self.service.start(self.userConfig.exportConfig(), True)
+                if (platform=='android') and (self.userConfig.getConfig('debug_toast')=='1'): AndroidWrapper().Toast('Monitor de notas desativado')
+            elif (value == '1') and (self.service.getState() == STATE_CONNECTEDTHREAD):
+                self.service.stop()
+                self.service.start(self.userConfig.exportConfig())
+                if (platform=='android') and (self.userConfig.getConfig('debug_toast')=='1'): AndroidWrapper().Toast('Monitor de notas ativado')
+        return True
                     
         
 if __name__ == '__main__':

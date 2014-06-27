@@ -7,12 +7,16 @@
 		"key": "update_timeout"
 	},
 	{
-        "type": "title",
-        "title": "Sair do SigmaWeb+"
-    },
+		"type": "bool",
+		"title": "Monitorar notas",
+		"desc": "Continuar monitorando notas apos sair?",
+		"section": "Sigmauser",
+		"key": "update_auto",
+		"true": "1" 
+	},
     {
 		"type": "bool",
-		"title": "Deletar dados de acesso",
+		"title": "Sair do SigmaWeb+",
 		"desc": "Deletar dados e sair do app",
 		"section": "Sigmauser",
 		"key": "app_delete",
