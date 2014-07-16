@@ -8,6 +8,8 @@ class cEncryption
 	
 	private function load_key()
 	{
+		global $CONFIG;
+		
 		if (!$this->key)
 		{
 			$keyfile = file_get_contents($CONFIG['RSA']['keypath']);

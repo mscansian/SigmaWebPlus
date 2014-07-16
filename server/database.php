@@ -10,6 +10,7 @@ class cDatabase
 	{	
 		if (!$this->connection)
 		{
+			global $CONFIG;
 			$this->connection = mysql_connect($CONFIG['DB']['hostname'], $CONFIG['DB']['username'], $CONFIG['DB']['password']);
 			if (!$this->connection)
 			{
