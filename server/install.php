@@ -59,14 +59,14 @@ if (!isset($CONFIG['SYSTEM']['install_time']))
 		
 		$sqlquery1 = 'DROP TABLE IF EXISTS users, requests, cache;';
 		$sqlquery2 = 'CREATE TABLE users (
-			matricula INT(6) NOT NULL PRIMARY KEY,
+			matricula INT(9) NOT NULL PRIMARY KEY,
 			nome VARCHAR(70) NOT NULL,
 			centro VARCHAR(20) NOT NULL,
 			tipo VARCHAR(50) NOT NULL
 		);';
 		
 		$sqlquery3 = 'CREATE TABLE requests (
-			matricula INT(6) NOT NULL,
+			matricula INT(9) NOT NULL,
 			data TIMESTAMP NOT NULL,
 			hash VARCHAR(32) NULL,
 			newhash VARCHAR(32) NULL,
@@ -79,7 +79,7 @@ if (!isset($CONFIG['SYSTEM']['install_time']))
 		);';
 		
 		$sqlquery4 = 'CREATE TABLE cache (
-			matricula INT(6) NOT NULL PRIMARY KEY,
+			matricula INT(9) NOT NULL PRIMARY KEY,
 			data TIMESTAMP NOT NULL,
 			dados TEXT NOT NULL
 		);';
