@@ -164,7 +164,7 @@ class SigmaWeb():
                 self.userConfig.setConfig('update_msg', '')
                 self.service.start(self.userConfig.exportConfig(), (self.userConfig.getConfig('update_auto')=='0'))
                 self.GUI.setWindow(screenLoading)
-                self.GUI.setProperty("msg_loading", "[b]Aguarde[/b]\n\nRealizando login...")
+                self.GUI.setProperty("msg_loading", "[b]Buscando notas no sistema[/b]\n\nDependendo da carga no servidor\nisto pode demorar")
         elif type == 'Reload':
             if self.service.getKey('update_force') == '0': self.service.setKey('update_force', '1')
         elif type == 'SwitchPanel':
