@@ -55,6 +55,8 @@ class screenMain(BoxLayout, screenBase):
         try: paginaAtual = self.paginas.current_slide.header
         except: paginaAtual = 'Home'
         
+        self.refresh.loading = 0
+        
         #Limpa as informacoes antigas
         self.paginas.clear_widgets()
         if (platform == 'android'):

@@ -114,7 +114,7 @@ class MainService:
                     self.setKey('update_msg', "Erro no servidor!\nTente novamente mais tarde")
             elif response[:10] == "Up-to-date":
                 Debug().note("Resposta do server 'Up-to-date'", "Service")
-                self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
+                self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
             elif response[33:(33+10)] == "<SigmaWeb>":
                 hash = response[:32]
                 data = response[33:]
