@@ -1,4 +1,0 @@
-AuthType Basic
-AuthName "Access restricted"
-AuthUserFile /home/pexe/secure/sigmawebplus.com.br/.htpasswd
-Require valid-user

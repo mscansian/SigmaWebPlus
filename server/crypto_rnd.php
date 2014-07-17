@@ -7,6 +7,7 @@
  * http://stackoverflow.com/questions/1182584/secure-random-number-generation-in-php
  */
 
+defined('VALID_ENTRY_POINT') or die('');
 
 class crypto_rnd
 {

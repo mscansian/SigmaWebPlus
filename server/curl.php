@@ -5,6 +5,8 @@
 	O header HTTP_USERNAME utilizado pelo SigmaWeb+ também está hard-coded
 */ 
 
+defined('VALID_ENTRY_POINT') or die('');
+
 //Para gerar o nome do arquivo de cookies precisamos de uma funcão RND com qualidade criptografica
 require 'crypto_rnd.php';
 
