@@ -82,7 +82,12 @@ class SigmaWeb():
                 key, value = keypair
                 self.userConfig.setConfig(key, value)
                 if key == 'update_msg':
-                    self.GUI.setProperty('userdata', [self.userConfig.getConfig('update_data'), value])
+                    if self.GUI.getWindow() is screenLoading: #Erro no server, Loggoff
+                        self.service.stop()
+                        self.GUI.setProperty('msg_error', 'Erro no servidor. \nTente novamente mais tarde')
+                        self.GUI.setWindow(screenLogin)
+                    else:
+                        self.GUI.setProperty('userdata', [self.userConfig.getConfig('update_data'), value])
                 elif key == 'update_data':
                     self.GUI.setProperty('userdata', [value, self.userConfig.getConfig('update_msg')])
                 elif key == 'update_auto':
