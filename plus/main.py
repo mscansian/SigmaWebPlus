@@ -187,6 +187,7 @@ class SigmaWeb():
         if (platform == 'android') and (not self.service.isAlive()): return False
         self.userConfig.setConfig('update_auto', str(value)) #Atualiza arquivo de config
         self.service.setKey('update_auto', str(value))       #Atualiza service
+        self.GUI.setProperty('update_auto', str(value))
         if self.service.isAlive() and (platform == 'android'):
             if (value == '0') and ((self.service.getState() == STATE_CONNECTEDREMOTE) or (self.service.getState() == STATE_CONNECTEDANDROID)):
                 self.service.stop()

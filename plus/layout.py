@@ -42,13 +42,17 @@ class screenLogin(BoxLayout, screenBase):
                 self.msg_error = value
 
 class screenMain(BoxLayout, screenBase):
+    last_userdata = None
+    
     def setProperty(self, prop):
         for key in prop:
             value = prop[key]
             if key == 'userdata':
                 self._createView(*value)
+                self.last_userdata = value
             elif key == 'update_auto':
                 self.service_state = value
+                if self.last_userdata is not None: self._createView(*self.last_userdata) #Hack: A maneira que encontrei para mudar a msg de ativado/desativado
     
     def _createView(self, xmlData, text_msg):
         alunoObject = aluno(xmlData) #Cria o objeto do aluno a partir do XML
@@ -67,6 +71,12 @@ class screenMain(BoxLayout, screenBase):
         homePage = pageHome()
         homePage.text_header = '[b]'+alunoObject.get('Nome')+'[/b]\n'+alunoObject.get('Matricula')+'\n'+alunoObject.get('Centro')
         homePage.text_msg = text_msg
+        
+        if (self.service_state == '0'):
+            homePage.text_msg = homePage.text_msg + "\n[color=ff0000]Monitoramento automatico: [b]DESATIVADO[/b][/color]"
+        else:
+            homePage.text_msg = homePage.text_msg + "\nMonitoramento automatico: [color=00aa00][b]ATIVADO[/b][/color]"
+        
         homePage.materias.height = 0 #Hack
         self.paginas.add_widget(homePage)
         

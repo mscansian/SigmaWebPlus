@@ -38,7 +38,7 @@
 			font_size: self.height/2*0.8
 			text: raiz.header_txt
 
-<AppHeaderButton@Button>
+<AppHeaderButton2@Button>
 	image_src: self.img_src
 	image_scale: 1
 	spacer_size_right: 0
@@ -88,7 +88,7 @@
 		
 		size: (root.height*root.image_scale, root.height*root.image_scale)
 	
-	AppHeaderButton:
+	AppHeaderButton2:
 		image_src: 'res/button-reload.png'
 		image_scale: root.image_scale * abs(root.loading-1)
 		spacer_size_right: root.spacer_size_right
@@ -96,6 +96,39 @@
 		eventname: root.eventname
 		
 		on_release: root.loading = 1
+
+<AppHeaderButton@Button>
+	img_src: ''
+	eventname: 'AppHeaderButton'
+	btn_active: 1
+
+	id: raiz
+
+	overlay: 0
+	size_hint: None,1
+	width: self.height
+	on_press:
+		self.overlay = 0.6
+		if self.btn_active == 1: app.on_event(self.eventname)
+	on_release: 
+		self.overlay = 0
+	canvas.after:
+		Color:
+			rgb: DarkGreen
+		Rectangle:
+			pos: self.pos
+			size: self.size
+		Color:
+			rgb: White
+		Rectangle:
+			source: raiz.img_src
+			pos: (self.center_x-self.width/2, self.center_y-self.height/2)
+			size: (self.width, self.height)
+		Color:
+			rgba: 0,0,0,self.overlay
+		Rectangle:
+			pos: self.pos
+			size: self.size
 
 <AppHeaderToggle@AppHeaderButton>
 	img_src1: ''
@@ -192,6 +225,7 @@
 				color: DarkGray
 				text: raiz.text_msg
 				markup: True
+				halign: 'center'
 				size_hint: (1, None)
 				height: codigo.font_size*2.3
 		
@@ -450,7 +484,7 @@
 					width: btn1.height
 					AppHeaderToggle:
 						id: btn1
-						img_src1: 'res/button-service-off.png'
+						img_src1: 'res/button-service-off2.png'
 						img_src2: 'res/button-service-on.png'
 						eventname: 'ServiceToggle'
 				AnchorLayout:
