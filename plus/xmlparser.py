@@ -73,7 +73,7 @@ class aluno:
                             elif (notasPublicadas > 0): dadosMateria['MediaParcial'] = mediaParcial / somaPesos
                             else: dadosMateria['MediaParcial'] = None
                             
-                            if (notasPublicadas == len(dadosMateria['Notas'])): dadosMateria['ExameReq'] = (5 - (mediaParcial*0.6))/0.4
+                            if (notasPublicadas == len(dadosMateria['Notas']) and dadosMateria['MediaParcial'] is not None): dadosMateria['ExameReq'] = (5 - (dadosMateria['MediaParcial']*0.6))/0.4
                             else: dadosMateria['ExameReq'] = None
                             
                             self.alunoData['Materias'].append(dadosMateria)

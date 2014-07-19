@@ -83,8 +83,15 @@ class screenMain(BoxLayout, screenBase):
         for materia in alunoObject.get('Materias'):
             #Adiciona resultados parciais na Home
             homePageMateria = pageHomeMateria()
-            homePageMateria.codigo = materia['Cod']
-            homePageMateria.nota = (str("%.1f" % materia['MediaParcial']) if materia['MediaParcial']!=None else 'N.Pub') 
+            if materia['MediaFinal'] is None:
+                homePageMateria.codigo = materia['Cod']
+                homePageMateria.nota = (str("%.1f" % materia['MediaParcial']) if materia['MediaParcial']!=None else 'N.Pub')
+            elif float(materia['MediaParcial']) >= 5.0:
+                homePageMateria.codigo = '[color=00aa00]'+materia['Cod']+'[/color]'
+                homePageMateria.nota = '[color=00aa00]'+str("%.1f" % materia['MediaParcial'])+'[/color]'
+            else:
+                homePageMateria.codigo = '[color=ff0000]'+materia['Cod']+'[/color]'
+                homePageMateria.nota = '[color=ff0000]'+str("%.1f" % materia['MediaParcial'])+'[/color]' 
             homePage.materias.add_widget(homePageMateria)
             homePage.materias.height += homePageMateria.height #Hack
             
@@ -105,7 +112,32 @@ class screenMain(BoxLayout, screenBase):
                     materiaPageNota.peso = nota['Peso']+'%'
                     materiaPageNota.nota = ((str("%.1f" % nota['Valor']) if isinstance(nota['Valor'],float) else nota['Valor']) if nota['Valor']!=None else 'N.Pub')
                     materiaPage.notas.add_widget(materiaPageNota)
-                    materiaPage.notas.height += materiaPageNota.height #Hack          
+                    materiaPage.notas.height += materiaPageNota.height #Hack
+                
+                #Media Parcial
+                materiaPageNota = pageMateriaNotaFinal()
+                materiaPageNota.codigo = 'Media parcial'
+                materiaPageNota.nota = ((str("%.1f" % materia['MediaParcial']) if isinstance(materia['MediaParcial'],float) else materia['MediaParcial']) if materia['MediaParcial']!=None else 'N.Pub')
+                materiaPage.notas.add_widget(materiaPageNota)
+                materiaPage.notas.height += materiaPageNota.height #Hack
+                
+                #Exame
+                materiaPageNota = pageMateriaNota()
+                if (materia['Exame'] is not None) or (materia['ExameReq'] is None):
+                    materiaPageNota.codigo = 'Exame'
+                    materiaPageNota.nota = ((str("%.1f" % materia['Exame']) if isinstance(materia['Exame'],float) else materia['Exame']) if materia['Exame']!=None else 'N.Pub')
+                else:
+                    materiaPageNota.codigo = 'Exame [necessario]'
+                    materiaPageNota.nota = ((str("%.1f" % materia['ExameReq']) if isinstance(materia['ExameReq'],float) else materia['ExameReq']) if materia['ExameReq']!=None else 'N.Pub')
+                materiaPage.notas.add_widget(materiaPageNota)
+                materiaPage.notas.height += materiaPageNota.height #Hack
+
+                #Media Final
+                materiaPageNota = pageMateriaNotaFinal()
+                materiaPageNota.codigo = 'Media final'
+                materiaPageNota.nota = ((str("%.1f" % materia['MediaFinal']) if isinstance(materia['MediaFinal'],float) else materia['MediaFinal']) if materia['MediaFinal']!=None else 'N.Pub')
+                materiaPage.notas.add_widget(materiaPageNota)
+                materiaPage.notas.height += materiaPageNota.height #Hack
 
 class screenLoading(BoxLayout, screenBase):
     def setProperty(self, prop):
