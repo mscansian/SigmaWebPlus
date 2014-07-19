@@ -95,7 +95,7 @@ install_pipmodules:
 
 .PHONY: install_pythonforandroid
 install_pythonforandroid:
-	git clone git://github.com/kivy/python-for-android
+	git clone git://github.com/mscansian/python-for-android
 	sudo chmod +x env_var.sh
 
 .PHONY: createdist
