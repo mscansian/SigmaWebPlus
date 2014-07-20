@@ -5,13 +5,18 @@ SigmaWeb+ é um aplicativo direcionado aos alunos da Universidade do Estado de S
 
 Features
 --------------
-* **Fácil de utilizar:** Os menus são simples e instintivos
+* **Fácil de utilizar:** Os menus são simples e intuitivos
 * **Multi-plataforma:** Funciona em Android, Windows e Linux
-* **Seguro:** Todos os dados transmitidos são criptografados
+* **Seguro:** Utiliza criptografia de chave pública para dados sensíveis
 * **Baixo trafego de dados:** Utiliza um servidor intermediário para otimizar o trafego de dados na rede (muito importante em conexões 3g)
 * **Customizável:** Desenvolvido em python e publicado com o código aberto
 
-Rodar aplicativo a partir do código fonte (Linux)
+Estrutura do projeto
+-----------------
+* **plus** Diretório com os arquivos de fonte do cliente (Python)
+* **server** Diretório com os arquivos de fonte do servidor (PHP)
+
+Rodar aplicativo a partir do código fonte (somente Linux)
 ---------------------
 Primeiramente é necessário fazer o download e instalar o [Android SDK](http://developer.android.com/sdk/index.html) e [Android NDK](http://developer.android.com/tools/sdk/ndk/index.html)
 
@@ -52,7 +57,7 @@ Dependências
 * [Android SDK](http://developer.android.com/sdk/index.html) [(Licença)](http://creativecommons.org/licenses/by/2.5/)
 * [Android NDK](http://developer.android.com/tools/sdk/ndk/index.html) [(Licença)](http://creativecommons.org/licenses/by/2.5/)
 * [kivy](https://github.com/kivy/kivy) (incluso no Makefile) [(Licença)](https://github.com/kivy/kivy/blob/master/LICENSE)
-* [python-for-android](https://github.com/kivy/python-for-android) (incluso no Makefile) [(Licença)](https://github.com/kivy/python-for-android/blob/master/LICENSE)
+* [python-for-android](https://github.com/kivy/python-for-android) (incluso fork no Makefile) [(Licença)](https://github.com/kivy/python-for-android/blob/master/LICENSE)
 * [python-singleinstance](https://github.com/mscansian/python-singleinstance) (incluso no GIT) [(Licença)](https://github.com/mscansian/python-singleinstance/blob/master/LICENSE)
 * [python-threadcomm](https://github.com/mscansian/python-threadcomm) (incluso no GIT) [(Licença)](https://github.com/mscansian/python-threadcomm/blob/master/LICENSE)
 * [notification-demo](https://github.com/brousch/kivy-notification-demo) (incluso no GIT)
