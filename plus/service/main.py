@@ -91,16 +91,16 @@ class MainService:
         
         shouldCheck = ((update_time+update_timeout*60 < time()) or (self.getKey('update_force')=='1')) and (self.getKey('username') <> '') 
         if shouldCheck:
-            if self.getKey('update_force') == '1': self.setKey('update_force', '0')
             
             Debug().note("Buscando notas no server...", "Service")
             try:
                 pagina = Page("http://www.sigmawebplus.com.br/server/")
-                pagina.set_RequestHeaders(Header("username", self.getKey('username')), Header("password", self.getKey('password')), Header("hash", self.getKey('update_hash')), Header("version", self.getKey('app_version')))
+                pagina.set_RequestHeaders(Header("username", self.getKey('username')), Header("password", self.getKey('password')), Header("hash", self.getKey('update_hash')), Header("version", self.getKey('app_version')), Header("force", self.getKey('update_force')))
                 pagina.Refresh()
                 response = pagina.get_ResponseData()
             except: response = ''
             assert type(response) is StringType
+            if self.getKey('update_force') == '1': self.setKey('update_force', '0')
             
             if response[:7] == "<error>":
                 error = response[7:-8]
