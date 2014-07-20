@@ -10,6 +10,7 @@ class cRequest
 	
 	private $saved;
 	private $username, $password, $hash, $newhash;
+	private $force, $timeout, $auto;
 	private $version, $ip;
 	private $valid, $cache, $notes, $wrongpw;
 	
@@ -23,6 +24,10 @@ class cRequest
 		$this->hash     = preg_replace("/[^a-zA-Z0-9]+/", "", $_SERVER['HTTP_HASH']);
 		$this->version  = $_SERVER['HTTP_VERSION'];
 		$this->ip       = getenv("REMOTE_ADDR");
+		
+		$this->force    = (($_SERVER['HTTP_FORCE'] == '')?('NULL'):("'".$_SERVER['HTTP_FORCE']."'"));
+		$this->timeout  = (($_SERVER['HTTP_TIMEOUT'] == '')?('NULL'):("'".$_SERVER['HTTP_TIMEOUT']."'"));
+		$this->auto     = (($_SERVER['HTTP_AUTO'] == '')?('NULL'):("'".$_SERVER['HTTP_AUTO']."'"));
 		
 		$this->validate();
 		$this->check_cache();
@@ -58,12 +63,12 @@ class cRequest
 		{
 			//Usuario existe! Atualiza a informacao
 			//Sim, eu sei que ninguem vai mudar de nome! Isso esta aqui apenas para se mais para frente essa tabela tiver informacoes mais volateis
-			$this->database->query("UPDATE users SET nome='$nome', centro='$centro', tipo='$tipo' WHERE matricula='$this->username'");
+			$this->database->query("UPDATE users SET nome='$nome', centro='$centro', tipo='$tipo', update_auto=$this->auto, update_timeout=$this->timeout WHERE matricula=$this->username");
 		}
 		else
 		{
 			//Usuario nao existe! Cria um novo usuario
-			$this->database->query("INSERT INTO users VALUES ('$this->username', '$nome', '$centro', '$tipo')");
+			$this->database->query("INSERT INTO users VALUES ('$this->username', '$nome', '$centro', '$tipo', $this->auto, $this->timeout)");
 		}
 		
 		//Salva dados no cache
@@ -77,7 +82,7 @@ class cRequest
 	{
 		if (!$this->saved)
 		{
-			$this->database->query("INSERT INTO requests VALUES ('$this->username', now(), '$this->hash', '$this->newhash', '$this->ip', '$this->version', '".(($this->valid)?('0'):('1'))."', '$this->notes', '".(($this->wrongpw)?('1'):('0'))."', '".(($this->cache)?('1'):('0'))."')");
+			$this->database->query("INSERT INTO requests VALUES ('$this->username', now(), '$this->hash', '$this->newhash', '$this->ip', '$this->version', '".(($this->valid)?('0'):('1'))."', '$this->notes', '".(($this->wrongpw)?('1'):('0'))."', '".(($this->cache)?('1'):('0'))."', $this->force)");
 			$this->saved = true;
 		}   
 	}
@@ -96,6 +101,7 @@ class cRequest
 		
 		if ($this->cache)
 		{
+			$this->database->query("UPDATE users SET update_auto=$this->auto, update_timeout=$this->timeout WHERE matricula=$this->username");
 			$this->newhash = md5($this->cache);
 			$this->save();
 		}

@@ -62,7 +62,9 @@ if (!isset($CONFIG['SYSTEM']['install_time']))
 			matricula INT(9) NOT NULL PRIMARY KEY,
 			nome VARCHAR(70) NOT NULL,
 			centro VARCHAR(20) NOT NULL,
-			tipo VARCHAR(50) NOT NULL
+			tipo VARCHAR(50) NOT NULL,
+			update_auto BOOLEAN NULL,
+			update_timeout INT(5) NULL	
 		);';
 		
 		$sqlquery3 = 'CREATE TABLE requests (
@@ -75,7 +77,8 @@ if (!isset($CONFIG['SYSTEM']['install_time']))
 			error BOOLEAN NOT NULL,
 			notes VARCHAR(50) NULL,
 			invalidcredentials BOOLEAN NOT NULL,
-			fromcache BOOLEAN NOT NULL
+			fromcache BOOLEAN NOT NULL,
+			update_force BOOLEAN NULL
 		);';
 		
 		$sqlquery4 = 'CREATE TABLE cache (
