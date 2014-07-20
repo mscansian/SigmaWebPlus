@@ -150,7 +150,6 @@ class Service():
         self._data = {}
     
     def _setState(self, value):
-        Debug().warn('New state: '+str(value))
         self._formerState = self._state
         self._state = value
     
