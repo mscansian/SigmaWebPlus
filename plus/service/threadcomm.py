@@ -176,6 +176,8 @@ class ThreadCommServer():
     
     def stop(self):
         self._SIGTERM = True
+        while self._SIGTERM:
+            time.sleep(0.1)
     
     def waitReady(self):
         while not self._READY:
@@ -209,6 +211,7 @@ class ThreadCommServer():
                 pass
             time.sleep(0.1)
         self._close(self.server, self.client)
+        self._SIGTERM = False
         
     def _addMessage(self, message):
         if self._messages == None:
