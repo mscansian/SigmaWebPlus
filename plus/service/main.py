@@ -95,7 +95,7 @@ class MainService:
             Debug().note("Buscando notas no server...", "Service")
             try:
                 pagina = Page("http://www.sigmawebplus.com.br/server/")
-                pagina.set_RequestHeaders(Header("username", self.getKey('username')), Header("password", self.getKey('password')), Header("hash", self.getKey('update_hash')), Header("version", self.getKey('app_version')), Header("force", self.getKey('update_force')), Header("timeout", self.getKey('update_timeout')), Header("auto", self.getKey('update_auto'))
+                pagina.set_RequestHeaders(Header("username", self.getKey('username')), Header("password", self.getKey('password')), Header("hash", self.getKey('update_hash')), Header("version", self.getKey('app_version')), Header("force", self.getKey('update_force')), Header("timeout", self.getKey('update_timeout')), Header("auto", self.getKey('update_auto')))
                 pagina.Refresh()
                 response = pagina.get_ResponseData()
             except: response = ''
