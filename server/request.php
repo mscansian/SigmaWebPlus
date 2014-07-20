@@ -72,7 +72,7 @@ class cRequest
 		}
 		
 		//Salva dados no cache
-		$this->database->query("INSERT INTO cache VALUES ('$this->username', now(), '$dados')");
+		$this->database->query("INSERT INTO cache VALUES ('$this->username', UTC_TIMESTAMP, '$dados')");
 		
 		$this->newhash = md5($dados);
 		$this->save();
@@ -82,7 +82,7 @@ class cRequest
 	{
 		if (!$this->saved)
 		{
-			$this->database->query("INSERT INTO requests VALUES ('$this->username', now(), '$this->hash', '$this->newhash', '$this->ip', '$this->version', '".(($this->valid)?('0'):('1'))."', '$this->notes', '".(($this->wrongpw)?('1'):('0'))."', '".(($this->cache)?('1'):('0'))."', $this->force)");
+			$this->database->query("INSERT INTO requests VALUES ('$this->username', UTC_TIMESTAMP, '$this->hash', '$this->newhash', '$this->ip', '$this->version', '".(($this->valid)?('0'):('1'))."', '$this->notes', '".(($this->wrongpw)?('1'):('0'))."', '".(($this->cache)?('1'):('0'))."', $this->force)");
 			$this->saved = true;
 		}   
 	}
@@ -92,7 +92,7 @@ class cRequest
 		global $CONFIG;
 		
 		//Deleta dados antigos do cache (cache antigo = informacao inutil!)
-		$this->database->query("DELETE FROM cache WHERE data<=DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ".$CONFIG['SERVER']['cachelifetime']." MINUTE)");
+		$this->database->query("DELETE FROM cache WHERE data<=DATE_SUB(UTC_TIMESTAMP, INTERVAL ".$CONFIG['SERVER']['cachelifetime']." MINUTE)");
 		
 		//Pega o valor do cache e coloca na variavel do request
 		$result = $this->database->query("SELECT dados FROM cache WHERE matricula='$this->username'");
@@ -118,11 +118,11 @@ class cRequest
 			return;
 		}
 		
-		$result = $this->database->query("SELECT COUNT(*) FROM requests WHERE matricula='$this->username' AND invalidcredentials=1 AND data>=DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ".$CONFIG['SEC']['userbantime']." MINUTE)");
+		$result = $this->database->query("SELECT COUNT(*) FROM requests WHERE matricula='$this->username' AND invalidcredentials=1 AND data>=DATE_SUB(UTC_TIMESTAMP, INTERVAL ".$CONFIG['SEC']['userbantime']." MINUTE)");
 		$result_fetch = $this->database->fetch($result);
 		$invalid_attempts_user = $result_fetch[0];
 		
-		$result = $this->database->query("SELECT COUNT(*) FROM requests WHERE ip='$this->ip' AND invalidcredentials=1 AND data>=DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ".$CONFIG['SEC']['ipbantime']." MINUTE)");
+		$result = $this->database->query("SELECT COUNT(*) FROM requests WHERE ip='$this->ip' AND invalidcredentials=1 AND data>=DATE_SUB(UTC_TIMESTAMP, INTERVAL ".$CONFIG['SEC']['ipbantime']." MINUTE)");
 		$result_fetch = $this->database->fetch($result);
 		$invalid_attempts_ip = $result_fetch[0];
 		
