@@ -275,21 +275,16 @@ class Service():
         if self._androidTrigger:
             Debug().note('service._startAndroid(): Iniciando o service no Android')
             from android import AndroidService
-            print "antes3"
-            self._androidService = AndroidService('SigmaWeb+', 'Monitorando')
-            print "durante3" 
+            self._androidService = AndroidService('SigmaWeb+', 'Monitorando') 
             self._androidService.start()
-            print "depois 3"
             self._androidTrigger = False
         
         if self._androidTriggerEnd:
             Debug().note('service._startAndroid(): Finalizando o service no Android')
-            print "antes 2"
             if self._androidService is not None:
                 self._androidService.stop()
             else:
                 Debug().warn('service._startAndroid(): Service nao pode ser finalizado. Nao esta aberto')
-            print "depois 2"
             self._androidService = None
             self._androidTriggerEnd = False
     
@@ -300,9 +295,7 @@ class Service():
         Debug().note('service._stopAndroid()')
         if (platform == 'android') and (self.getFormerState() == STATE_CONNECTEDREMOTE):
             from android import AndroidService
-            print "antes1"
             self._androidService = AndroidService('SigmaWeb+', 'Monitorando')
-            print "depois 1"
         
         if (self._androidService != None):
             Debug().note('service._stopAndroid(): Esperando o _androidTriggerEnd') 
