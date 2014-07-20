@@ -32,7 +32,7 @@ class NotificationAndroid(NotificationBase):
         icon = Drawable.icon
         if self.enableActivity: noti = NotificationBuilder(PythonActivity.mActivity)
         else:noti = NotificationBuilder(PythonActivity.mService)
-        #noti.setDefaults(Notification.DEFAULT_ALL)
+        noti.setDefaults(-1)
         noti.setContentTitle(AndroidString(self.title.encode('utf-8')))
         noti.setContentText(AndroidString(self.message.encode('utf-8')))
         noti.setSmallIcon(icon)
