@@ -122,7 +122,7 @@ class MainService:
                 if self.getKey('update_hash') != '': #Se esta nao eh a primeira vez que o usuario busca nota
                     self._notify()
                 
-                self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M')))
+                self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
                 self.setKey('update_hash', hash)
                 self.setKey('update_data', data)
                 Debug().note("Resposta do server '"+hash+"'", "Service")

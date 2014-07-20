@@ -25,7 +25,7 @@ class GUI:
     
     def setProperty(self, key, value):
         self._properties[key] = value
-        if self._window <> None: self._window.setProperty(self._properties)
+        if self._window <> None: self._window.setProperty({key:value})
     
     def getProperty(self, key):
         return self._properties[key]
@@ -41,25 +41,43 @@ class screenLogin(BoxLayout, screenBase):
             if key == 'msg_error':
                 self.msg_error = value
 
-class screenMain(BoxLayout, screenBase):
-    last_userdata = None
+class screenMain(BoxLayout, screenBase):   
+    homePage = None
+    text_msg = None
     
     def setProperty(self, prop):
         for key in prop:
+            print key
             value = prop[key]
             if key == 'userdata':
-                self._createView(*value)
-                self.last_userdata = value
+                self._createView(value)
+                self._stopLoading()
+            elif key == 'usermsg':
+                if self.homePage is not None: 
+                    self.text_msg = value
+                    self.homePage.text_msg = value
+                    self._updateTogge()
+                self._stopLoading()
+            elif key == 'toggleupdate':
+                self._updateTogge()
             elif key == 'update_auto':
                 self.service_state = value
-                if self.last_userdata is not None: self._createView(*self.last_userdata) #Hack: A maneira que encontrei para mudar a msg de ativado/desativado
     
-    def _createView(self, xmlData, text_msg):
+    def _updateTogge(self):
+        if self.homePage is not None:
+            self.homePage.text_msg = self.text_msg
+            if (self.tog.btn_state == '0'):
+                self.homePage.text_msg = self.homePage.text_msg + "\n[color=ff0000]Monitoramento automatico: [b]DESATIVADO[/b][/color]"
+            else:
+                self.homePage.text_msg = self.homePage.text_msg + "\nMonitoramento automatico: [color=00aa00][b]ATIVADO[/b][/color]"
+    
+    def _stopLoading(self):
+        self.refresh.loading = 0
+    
+    def _createView(self, xmlData):
         alunoObject = aluno(xmlData) #Cria o objeto do aluno a partir do XML
         try: paginaAtual = self.paginas.current_slide.header
         except: paginaAtual = 'Home'
-        
-        self.refresh.loading = 0
         
         #Limpa as informacoes antigas
         self.paginas.clear_widgets()
@@ -67,19 +85,12 @@ class screenMain(BoxLayout, screenBase):
             try: self.page_header.parent.remove_widget(self.page_header)
             except: pass
         else: self.page_header.clear_widgets()
+        self.homePage = pageHome()
+        self.homePage.text_header = '[b]'+alunoObject.get('Nome')+'[/b]\n'+alunoObject.get('Matricula')+'\n'+alunoObject.get('Centro')
         
-        homePage = pageHome()
-        homePage.text_header = '[b]'+alunoObject.get('Nome')+'[/b]\n'+alunoObject.get('Matricula')+'\n'+alunoObject.get('Centro')
-        homePage.text_msg = text_msg
         
-        if (self.service_state == '0'):
-            homePage.text_msg = homePage.text_msg + "\n[color=ff0000]Monitoramento automatico: [b]DESATIVADO[/b][/color]"
-        else:
-            homePage.text_msg = homePage.text_msg + "\nMonitoramento automatico: [color=00aa00][b]ATIVADO[/b][/color]"
-        
-        homePage.materias.height = 0 #Hack
-        self.paginas.add_widget(homePage)
-        
+        self.homePage.materias.height = 0 #Hack
+        self.paginas.add_widget(self.homePage)
         for materia in alunoObject.get('Materias'):
             #Adiciona resultados parciais na Home
             homePageMateria = pageHomeMateria()
@@ -92,8 +103,8 @@ class screenMain(BoxLayout, screenBase):
             else:
                 homePageMateria.codigo = '[color=ff0000]'+materia['Cod']+'[/color]'
                 homePageMateria.nota = '[color=ff0000]'+str("%.1f" % materia['MediaParcial'])+'[/color]' 
-            homePage.materias.add_widget(homePageMateria)
-            homePage.materias.height += homePageMateria.height #Hack
+            self.homePage.materias.add_widget(homePageMateria)
+            self.homePage.materias.height += homePageMateria.height #Hack
             
             #Adiciona botao para desktop
             if platform != 'android': self.page_header.add_widget(screenMainButton(text=materia['Cod']))

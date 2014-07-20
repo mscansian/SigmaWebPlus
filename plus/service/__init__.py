@@ -22,7 +22,7 @@
 '''
 
 #Import LIBs
-from threading import Thread
+from threading import Thread, currentThread
 from kivy.utils import platform
 from debug import Debug
 from notification.notification import Notification
@@ -45,8 +45,10 @@ class Service():
     
     #Variaveis
     _state = STATE_NOTSTARTED
+    _formerState = STATE_NOTSTARTED
     _forceThread = None
     _androidTrigger = False #Hack: O service do Android soh pode ser aberto pelo main thread. Uso essa flag para avisar o main thread a hora de abrir
+    _androidTriggerEnd = False
     _androidService = None #Guarda do ponteiro do Android Service, para poder fechar depois
     _lastDisconnection = 0 #Essa variavel serve para ter um timeout de 5 segundos entre cada reconexao
     
@@ -60,21 +62,31 @@ class Service():
     '''
     def start(self, data, forceThread=False):
         if (self.getState() == STATE_NOTSTARTED):
-            Debug().note('service.start()')
+            Debug().note('service.start(): Iniciando server')
+            self._setState(STATE_CONNECTING)
             self._data = data #Salva dados no objeto
             self._forceThread = forceThread
             thread = Thread(target=self._start, name='service._start()') #Faz a inicializacao do Service em outro thread
+            thread.daemon = False
             thread.start()
-            self._state = STATE_CONNECTING
+        else:
+            Debug().note('service.start(): Reiniciando server')
+            thread = Thread(target=self._restart, name='service._restart()', args=(data, forceThread))
+            thread.daemon = False
+            thread.start()
     
     '''
     Manda um aviso para o service se finalizar e espera a resposta do service!
     ATENCAO: Essa funcao eh bloqueante. Ela trava o andamento do programa ateh receber o sinal do service!
     '''
     def stop(self, killService=True):
-        while (self.getState() == STATE_CONNECTING): pass #Espera o ThreadComm conectar, caso ele esteja no modo 'Conectando'
-        if self.isAlive(): 
+        while (self.getState() == STATE_CONNECTING): sleep(0.1) #Espera o ThreadComm conectar, caso ele esteja no modo 'Conectando'
+        if self.isAlive():
+            self._setState(STATE_DISCONNECTING)
             self._stop(killService)
+        else:
+            Debug().warn('service.stop(): Service nao esta rodando. Nada para parar! CurrentState: '+str(self.getState()))
+            
     
     '''
     Retorna True se o service esta conectado e pronto para funcionar
@@ -89,6 +101,9 @@ class Service():
     '''
     def getState(self):
         return self._state
+    
+    def getFormerState(self):
+        return self._formerState
     
     '''
     Retorna o valor da chave solicitada
@@ -134,6 +149,16 @@ class Service():
     def __init__(self):
         self._data = {}
     
+    def _setState(self, value):
+        Debug().warn('New state: '+str(value))
+        self._formerState = self._state
+        self._state = value
+    
+    def _restart(self, data, forceThread=False):
+        Debug().note('service._restart()')
+        self.stop()
+        self.start(data, forceThread)
+    
     '''
     Metodo interno para iniciar o service. Ele primeiro vai verificar se o service já não está rodando
     Se o service já estiver rodando, ele salva o ponteiro do ThreadComm e solicita ao service todas os seus dados
@@ -152,8 +177,8 @@ class Service():
             self._startService()
         else: #Servico já esta rodando
             Debug().note('service._start(): Service ja esta aberto')
-            self._threadComm.sendMsg("AKEY")
-            if (self._forceThread == False) or (platform != 'android'): self._state = STATE_CONNECTEDREMOTE
+            self._threadComm.sendMsg("AKEY") #Solicita todas as keys que o server tem disponivel!
+            if (self._forceThread == False) or (platform != 'android'): self._setState(STATE_CONNECTEDREMOTE)
             else:
                 Debug().warn('service._start(): Finalizando service e abrindo denovo para atender a forceThread')
                 currentData = self._data
@@ -165,10 +190,11 @@ class Service():
     Ele inicializa o service e depois conecta o ThreadComm com o service
     '''
     def _startService(self):
-        if (platform == 'android') and (self._forceThread==False): connectThread = False
+        if (platform == 'android') and (not self._forceThread): connectThread = False
         else: connectThread = True
         
         if not connectThread:
+            Debug().note('service._startService(): Esperando o _androidTrigger')
             self._androidTrigger = True #Hack: Ativa a flag para abrir o service do android. O android soh deixa o service ser aberto pelo main thread
             while (self._androidTrigger == True): pass #Espera o service abrir
         else:
@@ -197,8 +223,8 @@ class Service():
             try: message = self._threadComm.recvMsg()
             except: pass
         
-        if connectThread: self._state = STATE_CONNECTEDTHREAD
-        else: self._state = STATE_CONNECTEDANDROID
+        if connectThread: self._setState(STATE_CONNECTEDTHREAD)
+        else: self._setState(STATE_CONNECTEDANDROID)
     
     '''
     Metodo utilizado para fazer um parse da mensagem recebida e reagir conforme
@@ -250,21 +276,42 @@ class Service():
         if self._androidTrigger:
             Debug().note('service._startAndroid(): Iniciando o service no Android')
             from android import AndroidService
+            print "antes3"
             self._androidService = AndroidService('SigmaWeb+', 'Monitorando')
+            print "durante3" 
             self._androidService.start()
+            print "depois 3"
             self._androidTrigger = False
+        
+        if self._androidTriggerEnd:
+            Debug().note('service._startAndroid(): Finalizando o service no Android')
+            print "antes 2"
+            if self._androidService is not None:
+                self._androidService.stop()
+            else:
+                Debug().warn('service._startAndroid(): Service nao pode ser finalizado. Nao esta aberto')
+            print "depois 2"
+            self._androidService = None
+            self._androidTriggerEnd = False
     
     '''
     Para o service do android caso ele esteja iniciado
     '''
     def _stopAndroid(self):
-        if (platform == 'android') and (self.getState() == STATE_CONNECTEDREMOTE):
+        Debug().note('service._stopAndroid()')
+        if (platform == 'android') and (self.getFormerState() == STATE_CONNECTEDREMOTE):
             from android import AndroidService
+            print "antes1"
             self._androidService = AndroidService('SigmaWeb+', 'Monitorando')
+            print "depois 1"
         
-        if (self._androidService != None): 
-            self._androidService.stop()
-            self._androidService = None
+        if (self._androidService != None):
+            Debug().note('service._stopAndroid(): Esperando o _androidTriggerEnd') 
+            self._androidTriggerEnd = True
+            if currentThread().name == 'service._restart()':
+                while self._androidTriggerEnd: sleep(0.1)
+            else:
+                self._startAndroid()
     
     '''
     Funcao privada para parar o service (ela nao faz checks se o service foi iniciado. Isso eh trabalho da funcao publica)
@@ -283,17 +330,17 @@ class Service():
             while message != 'STOP':
                 try: message = self._threadComm.recvMsg()
                 except: pass
-            
             while True:
                 try: self._threadComm.sendMsg("NULL")
                 except: break
                 sleep(0.1)
-        
+                
+        Debug().note('service.stop(): Limpando a memoria')
         #Limpa a memoria e limpa o estado do objeto
         self._threadComm.stop()
         if killService or forceKillAndroid: self._stopAndroid()
         self._data = None
         self._threadComm = None
-        self._state = STATE_NOTSTARTED
+        self._setState(STATE_NOTSTARTED)
         self._lastDisconnection = time()
         
