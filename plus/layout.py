@@ -1,6 +1,7 @@
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from xmlparser import aluno
 from kivy.utils import platform
 
@@ -148,6 +149,11 @@ class screenMain(BoxLayout, screenBase):
                 materiaPageNota.nota = ((str("%.1f" % materia['MediaFinal']) if isinstance(materia['MediaFinal'],float) else materia['MediaFinal']) if materia['MediaFinal']!=None else 'N.Pub')
                 materiaPage.notas.add_widget(materiaPageNota)
                 materiaPage.notas.height += materiaPageNota.height #Hack
+        
+        if self.homePage.materias.height == 0: #Nenhuma materia disponivel
+            homePageMateria = Label(text='[color=ff0000]Nenhuma materia disponivel[/color]', markup=True)
+            self.homePage.materias.add_widget(homePageMateria)
+            self.homePage.materias.height += homePageMateria.font_size * 3 #Hack
 
 class screenLoading(BoxLayout, screenBase):
     def setProperty(self, prop):
