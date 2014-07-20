@@ -153,10 +153,9 @@ class SigmaWeb():
         if self.GUI.getWindow() is not screenMain:
             if self.userConfig.getConfig('update_data') <> '':
                 self.GUI.setProperty('userdata', self.userConfig.getConfig('update_data'))
-                print "aaaaaaaaaaaaa"
                 self.GUI.setWindow(screenMain)
+                self.GUI.setProperty('update_auto', self.userConfig.getConfig('update_auto')) #Seta o estado inicial do botao
                 self.GUI.setProperty('usermsg', self.userConfig.getConfig('update_msg'))
-                self.GUI.setProperty('update_auto', self.userConfig.getConfig('update_auto')) #Isso funciona??
     
     def build_settings(self, settings):
         jsonConfig = open('res/config.json', 'r').read()

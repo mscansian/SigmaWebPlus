@@ -47,7 +47,6 @@ class screenMain(BoxLayout, screenBase):
     
     def setProperty(self, prop):
         for key in prop:
-            print key
             value = prop[key]
             if key == 'userdata':
                 self._createView(value)
