@@ -233,6 +233,11 @@ class ThreadCommServer():
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.bind(("127.0.0.1", port))
             server.settimeout(timeout)
+        except socket.error:
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+            if (exceptionValue[0] == 98): #Address already in use
+                #Todo: Try to fix this error!
+                raise ThreadCommException("Unable to start server socket at ThreadCommServer._createServer()")
         except:
             raise ThreadCommException("Unable to start server socket at ThreadCommServer._createServer()")
         
