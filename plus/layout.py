@@ -154,6 +154,9 @@ class screenMain(BoxLayout, screenBase):
             homePageMateria = Label(text='[color=ff0000]Nenhuma materia disponivel[/color]', markup=True)
             self.homePage.materias.add_widget(homePageMateria)
             self.homePage.materias.height += homePageMateria.font_size * 3 #Hack
+            self.homePage.text_msg2 = ''
+        else:
+            self.homePage.text_msg2 = 'Deslize para ver detalhes\n\n|\n\\/'
 
 class screenLoading(BoxLayout, screenBase):
     def setProperty(self, prop):
