@@ -89,7 +89,8 @@ class MainService:
         update_time = float(self.getKey('update_time'))
         if (update_timeout < 30): self.setKey('update_timeout', '30')
         
-        shouldCheck = ((update_time+update_timeout*60 < time()) or (self.getKey('update_force')=='1')) and (self.getKey('username') <> '') 
+        shouldCheck = ((update_time+update_timeout*60 < time()) or (self.getKey('update_force')=='1'))
+        shouldCheck = shouldCheck and (self.getKey('username') <> '') 
         if shouldCheck:
             
             Debug().note("Buscando notas no server...", "Service")
@@ -113,9 +114,11 @@ class MainService:
                     return False
                 else:
                     self.setKey('update_msg', "[color=ff0000][b]Erro no servidor![/b][/color]\n"+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
+                    self.setKey('update_time', time()-(update_timeout-float(self.getKey('debug_errortimeout')))*60)
             elif response[:10] == "Up-to-date":
                 Debug().note("Resposta do server 'Up-to-date'", "Service")
                 self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
+                self.setKey('update_time', time())
             elif response[33:(33+10)] == "<SigmaWeb>":
                 hash = response[:32]
                 data = response[33:]
@@ -126,12 +129,12 @@ class MainService:
                 self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
                 self.setKey('update_hash', hash)
                 self.setKey('update_data', data)
+                self.setKey('update_time', time())
                 Debug().note("Resposta do server '"+hash+"'", "Service")
             else:
                 Debug().error("Erro ao requisitar notas!", "Service")
                 self.setKey('update_msg', "[color=ff0000][b]Erro no servidor![/b][/color]\n"+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
-            
-            self.setKey('update_time', time())
+                self.setKey('update_time', time()-(update_timeout-float(self.getKey('debug_errortimeout')))*60)
     
     def getKey(self, key):
         try: value = str(self.data[key])

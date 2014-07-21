@@ -28,7 +28,7 @@
 		"desc": "Mostra a resposta do server no logcat",
 		"section": "Sigmauser",
 		"key": "debug_serverout",
-		"true": "0" 
+		"true": "1" 
 	},
 	
 	{
@@ -37,6 +37,13 @@
 		"desc": "Finaliza todos os recursos do app ao sair",
 		"section": "Sigmauser",
 		"key": "debug_forceexit",
-		"true": "0" 
+		"true": "1" 
+	},
+	{ 
+		"type": "numeric",
+		"title": "Intervalo apos erro",
+		"desc": "Valor em minutos",
+		"section": "Sigmauser",
+		"key": "debug_errortimeout"
 	}
 ]

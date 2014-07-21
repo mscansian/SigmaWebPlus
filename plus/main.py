@@ -169,7 +169,8 @@ class SigmaWeb():
                          'debug_disablepause' : '0',
                          'debug_toast'        : '0',
                          'debug_serverout'    : '0',
-                         'debug_forceexit'    : '0'
+                         'debug_forceexit'    : '0',
+                         'debug_errortimeout' : '10'
                          }
         
         self.userConfig = UserConfig(config, defaultSection, defaultConfig)
