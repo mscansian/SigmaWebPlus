@@ -23,6 +23,9 @@ class Debug():
     #Configuration
     enabled = True
     
+    def data(self, message, header):
+        if self.enabled: print self.OKGREEN + header + ":\n" + self.ENDC + message
+    
     def note(self, message, header="SigmaWeb"):
         if self.enabled: print self.OKGREEN + header + ": " + message + self.ENDC
     

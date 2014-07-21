@@ -98,6 +98,7 @@ class MainService:
                 pagina.set_RequestHeaders(Header("username", self.getKey('username')), Header("password", self.getKey('password')), Header("hash", self.getKey('update_hash')), Header("version", self.getKey('app_version')), Header("force", self.getKey('update_force')), Header("timeout", self.getKey('update_timeout')), Header("auto", self.getKey('update_auto')))
                 pagina.Refresh()
                 response = pagina.get_ResponseData()
+                if self.getKey('debug_serverout') == '1': Debug().data(response, "Server response")
             except: response = ''
             assert type(response) is StringType
             if self.getKey('update_force') == '1': self.setKey('update_force', '0')

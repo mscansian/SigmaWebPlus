@@ -75,7 +75,8 @@ class SigmaWeb():
     def on_stop(self):
         Debug().note("on_stop()")
         self.userConfig.write()
-        self.service.stop(((self.userConfig.getConfig('update_auto')=='0') or (self.userConfig.getConfig('app_delete')=='1')))
+        if (self.userConfig.getConfig('debug_forceexit')=='1'): Debug().warn("debug_forceexit = 1")
+        self.service.stop(((self.userConfig.getConfig('update_auto')=='0') or (self.userConfig.getConfig('app_delete')=='1') or (self.userConfig.getConfig('debug_forceexit')=='1')))
         Debug().note("Aplicativo foi finalizado com sucesso!")
     
     def on_pause(self):
@@ -175,7 +176,9 @@ class SigmaWeb():
                          'app_version'        : __version__,
                          'app_delete'         : '0',
                          'debug_disablepause' : '0',
-                         'debug_toast'        : '0'
+                         'debug_toast'        : '0',
+                         'debug_serverout'    : '0',
+                         'debug_forceexit'    : '0'
                          }
         
         self.userConfig = UserConfig(config, defaultSection, defaultConfig)

@@ -20,5 +20,23 @@
 		"section": "Sigmauser",
 		"key": "debug_toast",
 		"true": "1" 
+	},
+	
+	{
+		"type": "bool",
+		"title": "Server output",
+		"desc": "Mostra a resposta do server no logcat",
+		"section": "Sigmauser",
+		"key": "debug_serverout",
+		"true": "0" 
+	},
+	
+	{
+		"type": "bool",
+		"title": "Force end",
+		"desc": "Finaliza todos os recursos do app ao sair",
+		"section": "Sigmauser",
+		"key": "debug_forceexit",
+		"true": "0" 
 	}
 ]
