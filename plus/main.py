@@ -65,6 +65,7 @@ class SigmaWeb():
         Verifica se o usuario ja realizou o login
         '''
         if self.userConfig.getConfig('username') == '':
+            self._clearConfig()
             self.GUI.setWindow(screenLogin)
         else:
             self.service.start(self.userConfig.exportConfig(), (self.userConfig.getConfig('update_auto')=='0'))
@@ -105,12 +106,12 @@ class SigmaWeb():
                     Mensagens pode ser de dois tipos: Erro ou não
                     '''
                     if (value[:4] == 'Erro'):
-                        if self.GUI.getWindow() is screenLoading:
+                        if self.userConfig.getConfig('update_login') == '1':
                             '''
                             Erro no servidor (durante login). Faz logoff do usuario e mostra uma mensagem na tela de login
                             '''
                             self.service.stop()
-                            self.userConfig.setConfig('username', '')
+                            self._clearConfig()
                             self.GUI.setProperty('msg_error', 'Erro no servidor. \nTente novamente mais tarde')
                             self.GUI.setWindow(screenLogin)
                         else:
@@ -135,23 +136,18 @@ class SigmaWeb():
                     self.GUI.setProperty('update_auto', value)
                 elif key == 'username':
                     if value == '':
+                        self._clearConfig()
                         self.service.stop()
                         self.GUI.setProperty('msg_error', 'Login ou senha incorreto')
                         self.GUI.setWindow(screenLogin)
                 elif key == 'app_delete':
                     Debug().error("Iniciando o procedimento do app_delete...")
-                    self.userConfig.setConfig('username', '')
-                    self.userConfig.setConfig('password', '')
-                    self.userConfig.setConfig('update_time', '0')
-                    self.userConfig.setConfig('update_hash', '')
-                    self.userConfig.setConfig('update_data', '')
-                    self.userConfig.setConfig('update_msg', '')
-                    self.userConfig.setConfig('update_login', '0')
+                    self._clearConfig()
                     self.kivyApp.stop()
                     
         
         if self.GUI.getWindow() is not screenMain:
-            if self.userConfig.getConfig('update_data') <> '':
+            if (self.userConfig.getConfig('update_data') != '') and (self.userConfig.getConfig('username') != ''):
                 self.GUI.setProperty('userdata', self.userConfig.getConfig('update_data'))
                 self.GUI.setWindow(screenMain)
                 self.GUI.setProperty('update_auto', self.userConfig.getConfig('update_auto')) #Seta o estado inicial do botao
@@ -188,13 +184,7 @@ class SigmaWeb():
         self.service.setKey(key, value)
         if key == 'app_delete':
             Debug().error("Iniciando o procedimento do app_delete...")
-            self.userConfig.setConfig('username', '')
-            self.userConfig.setConfig('password', '')
-            self.userConfig.setConfig('update_time', '0')
-            self.userConfig.setConfig('update_hash', '')
-            self.userConfig.setConfig('update_data', '')
-            self.userConfig.setConfig('update_msg', '')
-            self.userConfig.setConfig('update_login', '0')
+            self._clearConfig()
             self.kivyApp.stop()
         elif key == 'update_timeout':
             if int(value) < 30:
@@ -208,12 +198,9 @@ class SigmaWeb():
             type, username, password = args
             if (username=='') or (password==''): self.GUI.setProperty("msg_error", "Preenchas seus dados")
             else:
+                self._clearConfig()
                 self.userConfig.setConfig('username', username)
                 self.userConfig.setConfig('password', RSACrypto('res/sigmawebplus-server.pub').encrypt(password))
-                self.userConfig.setConfig('update_time', '0')
-                self.userConfig.setConfig('update_hash', '')
-                self.userConfig.setConfig('update_data', '')
-                self.userConfig.setConfig('update_msg', '')
                 self.userConfig.setConfig('update_login', '1')
                 self.service.start(self.userConfig.exportConfig(), False)
                 self.GUI.setWindow(screenLoading)
@@ -239,7 +226,15 @@ class SigmaWeb():
                 self.service.start(self.userConfig.exportConfig())
                 if (platform=='android') and (self.userConfig.getConfig('debug_toast')=='1'): AndroidWrapper().Toast('Monitor de notas ativado')
         return True
-                    
+    
+    def _clearConfig(self):
+        self.userConfig.setConfig('username', '')
+        self.userConfig.setConfig('password', '')
+        self.userConfig.setConfig('update_time', '0')
+        self.userConfig.setConfig('update_hash', '')
+        self.userConfig.setConfig('update_data', '')
+        self.userConfig.setConfig('update_msg', '')
+        self.userConfig.setConfig('update_login', '0')         
         
 if __name__ == '__main__':
     SigmaWeb()
