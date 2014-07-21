@@ -104,22 +104,13 @@ class SigmaWeb():
                 '''
                 if key == 'update_msg':
                     '''
-                    Mensagens pode ser de dois tipos: Erro ou não
+                    Erro no servidor (durante login). Faz logoff do usuario e mostra uma mensagem na tela de login
                     '''
-                    if (value[:4] == 'Erro'):
-                        if self.userConfig.getConfig('update_login') == '1':
-                            '''
-                            Erro no servidor (durante login). Faz logoff do usuario e mostra uma mensagem na tela de login
-                            '''
-                            self.service.stop()
-                            self._clearConfig()
-                            self.GUI.setProperty('msg_error', 'Erro no servidor. \nTente novamente mais tarde')
-                            self.GUI.setWindow(screenLogin)
-                        else:
-                            '''
-                            Erro no servidor (usuario ja logado). Mostra uma mensagem e continua o curso normal do programa
-                            '''
-                            self.GUI.setProperty('usermsg', '[color=ff0000][b]'+value+'[/b][/color]')
+                    if (self.userConfig.getConfig('update_login') == '1') and (value[:46] == '[color=ff0000][b]Erro no servidor![/b][/color]'):
+                        self.service.stop()
+                        self._clearConfig()
+                        self.GUI.setProperty('msg_error', 'Erro ao acessar o sistema. \nTente novamente mais tarde')
+                        self.GUI.setWindow(screenLogin)
                     else:
                         #Mensagem nao eh um erro entao mostra ela com a cor normal
                         self.GUI.setProperty('usermsg', value)

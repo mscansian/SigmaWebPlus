@@ -112,7 +112,7 @@ class MainService:
                     self.setKey('update_time', '0')
                     return False
                 else:
-                    self.setKey('update_msg', "Erro no servidor!\nTente novamente mais tarde")
+                    self.setKey('update_msg', "[color=ff0000][b]Erro no servidor![/b][/color]\n"+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
             elif response[:10] == "Up-to-date":
                 Debug().note("Resposta do server 'Up-to-date'", "Service")
                 self.setKey('update_msg', "Ultima atualizacao em "+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
@@ -129,7 +129,7 @@ class MainService:
                 Debug().note("Resposta do server '"+hash+"'", "Service")
             else:
                 Debug().error("Erro ao requisitar notas!", "Service")
-                self.setKey('update_msg', "Erro no servidor!\nTente novamente mais tarde")
+                self.setKey('update_msg', "[color=ff0000][b]Erro no servidor![/b][/color]\n"+str(datetime.fromtimestamp(time()).strftime('%d/%m/%y %H:%M:%S')))
             
             self.setKey('update_time', time())
     
