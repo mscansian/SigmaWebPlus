@@ -52,7 +52,7 @@ class MainService:
             try:
                 self.listen()
                 if self.SIGSTRT: self.check()
-                sleep(0.1)
+                sleep(0.1) #Limit CPU time
             except:
                 Debug().error("Erro fatal! Tentando limpar a memória antes de sair...", "Service")                
                 self._cleanResources()
@@ -195,5 +195,4 @@ if __name__ == '__main__':
         if serviceObject.notificationMsg is not None: 
             Notification(*serviceObject.notificationMsg).notify()
             serviceObject.notificationMsg = None
-            
-    
+        sleep(1) #Limit CPU time
