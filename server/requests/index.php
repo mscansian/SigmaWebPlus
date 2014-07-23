@@ -11,7 +11,7 @@
 		$_GET['class'] = 'geral';
 	}
 	
-	$Menu = array("Geral", "Acessos", "Usuários");
+	$Menu = array("Geral", "Acessos", "Usuários", "Erros");
 	
 ?><!DOCTYPE html>
 <html lang="en">
@@ -78,6 +78,15 @@
           	case 'usuários':
           		echo '<h1 class="page-header">Usuários</h1>';
           		include 'usuarios.php';
+          		break;
+          	case 'usuario':
+          		include 'usuario.php';
+          		break;
+          	case 'erros':
+          		include 'errors.php';
+          		break;
+          	case 'ip';
+          		include 'ip.php';
           		break;
           } 
 	      ?>          
