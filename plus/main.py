@@ -58,7 +58,12 @@ class SigmaWeb():
         '''
         if ProgramVersionGreater(__version__, self.userConfig.getConfig('app_version')): 
             Debug().warn("Deletando configuracoes de versao antiga!")
+            username = self.userConfig.getConfig('username')
+            password = self.userConfig.getConfig('password')
             self.userConfig.clearConfig()
+            self.userConfig.setConfig('username', username)
+            self.userConfig.setConfig('password', password)
+            if self.userConfig.getConfig('username') != '': self.userConfig.setConfig('update_login', '1')
         self.userConfig.setConfig('app_delete', '0')
         
         '''
@@ -68,8 +73,12 @@ class SigmaWeb():
             self._clearConfig()
             self.GUI.setWindow(screenLogin)
         else:
-            self.service.start(self.userConfig.exportConfig(), (self.userConfig.getConfig('update_auto')=='0'))
-            self.GUI.setProperty("msg_loading", "Carregando notas... Aguarde!")
+            if self.userConfig.getConfig('update_login') == '0':
+                self.service.start(self.userConfig.exportConfig(), (self.userConfig.getConfig('update_auto')=='0'))
+                self.GUI.setProperty("msg_loading", "Carregando notas... Aguarde!")
+            else:
+                self.service.start(self.userConfig.exportConfig(), False)
+                self.GUI.setProperty("msg_loading", "[b]Buscando notas no sistema[/b]\n\nDependendo da carga no servidor\nisto pode demorar")
             self.GUI.setWindow(screenLoading)
     
     def on_stop(self):
