@@ -79,7 +79,7 @@ class SigmaWeb():
             else:
                 self.service.start(self.userConfig.exportConfig(), False)
                 self.GUI.setProperty("msg_loading", "[b]Buscando notas no sistema[/b]\n\nDependendo da carga no servidor\nisto pode demorar")
-            self.GUI.setWindow(screenLoading)
+            if self.GUI.getWindow() == 'NoneType': self.GUI.setWindow(screenLoading)
     
     def on_stop(self):
         Debug().note("on_stop()")
