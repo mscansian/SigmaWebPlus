@@ -64,7 +64,7 @@ class cSigmaWeb
 		else
 		{
 			$HTML = new DOMDocument; @$HTML->loadHTML($response); @$XPATH = new DOMXPath($HTML);
-			$this->dadosAluno['Centro'] = $XPATH->query('*/td',$XPATH->query('*/table')->item(0))->item(1)->nodeValue;
+			$this->dadosAluno['Centro'] = $XPATH->query('*/td',$XPATH->query('*/table')->item(0))->item(1)->nodeValue; 
 			
 			$this->dadosAluno['Nome'] = explode("<br>",DOMinnerHTML($XPATH->query('*/td',$XPATH->query('*/table')->item(0))->item(2))); $this->dadosAluno['Nome'] = $this->dadosAluno['Nome'][0];
 			$this->dadosAluno['Matricula'] = explode("<br>",DOMinnerHTML($XPATH->query('*/td',$XPATH->query('*/table')->item(0))->item(2))); $this->dadosAluno['Matricula'] = explode(" - ", $this->dadosAluno['Matricula'][1]); $this->dadosAluno['Matricula'] = $this->dadosAluno['Matricula'][0];
@@ -79,28 +79,38 @@ class cSigmaWeb
 		
 		//Get turmas
 		$Turmas = array();
-		if ($this->dadosAluno['StatusNum'] >= 3) //Verifica se o sistema nao esta em epoca de matriculas
+		if ($this->dadosAluno['StatusNum'] >= 4) //Verifica se o sistema nao esta em epoca de matriculas
 		{
-			$request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb1.php?var=R6655");
-			$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb4.php");
-			if ($response == "") { throw new Exception('Connection error'); }
-			if (strstr($response,"Não há matrícula efetivada para "))
+			$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb1.php?var=R6655");
+			if (strstr($response,"Sessão encerrada. Por favor, feche o navegador"))
 			{
-				//Erro, nao ha materias!
+				//Acesso esta bloqueado
+				/* Todo: Fazer um log de erros do servidor! */
 			}
 			else
 			{
-				$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb5.php");
+				$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb4.php");
 				if ($response == "") { throw new Exception('Connection error'); }
-				$HTML = new DOMDocument; @$HTML->loadHTML($response); @$XPATH = new DOMXPath($HTML);
-				$NumTurmas = substr_count(DOMinnerHTML($XPATH->query('/html/body/form/table/tr[3]/td/select')->item(0)),"</option>");
-				for ($a=0; $a <= $NumTurmas-1; $a++)
+				if (strstr($response,"Não há matrícula efetivada para "))
 				{
-					$TurmaNome = explode(" - ",DOMinnerHTML($XPATH->query('/html/body/form/table/tr[3]/td/select/option')->item($a))); $TurmaNome = $TurmaNome[1];
-					$TurmaCod = explode("/",$XPATH->query('/html/body/form/table/tr[3]/td/select/option')->item($a)->getAttribute('value')); $TurmaLetra = $TurmaCod[1]; $TurmaCentro = $TurmaCod[2]; $TurmaCod = $TurmaCod[0];
-					array_push($Turmas, array(Nome=>$TurmaNome, Codigo=>$TurmaCod, Turma=>$TurmaLetra, Centro=>$TurmaCentro));
+					//Erro, nao ha materias!
 				}
-				unset($TurmaNome); unset($TurmaCod); unset($NumTurmas);
+				else
+				{
+					print ($response."**");
+					$response = $request->requestGet("https://sigmaweb.cav.udesc.br/sw/sigmaweb5.php");
+					print ($response."**");
+					if ($response == "") { throw new Exception('Connection error'); }
+					$HTML = new DOMDocument; @$HTML->loadHTML($response); @$XPATH = new DOMXPath($HTML);
+					$NumTurmas = substr_count(DOMinnerHTML($XPATH->query('/html/body/form/table/tr[3]/td/select')->item(0)),"</option>");
+					for ($a=0; $a <= $NumTurmas-1; $a++)
+					{
+						$TurmaNome = explode(" - ",DOMinnerHTML($XPATH->query('/html/body/form/table/tr[3]/td/select/option')->item($a))); $TurmaNome = $TurmaNome[1];
+						$TurmaCod = explode("/",$XPATH->query('/html/body/form/table/tr[3]/td/select/option')->item($a)->getAttribute('value')); $TurmaLetra = $TurmaCod[1]; $TurmaCentro = $TurmaCod[2]; $TurmaCod = $TurmaCod[0];
+						array_push($Turmas, array(Nome=>$TurmaNome, Codigo=>$TurmaCod, Turma=>$TurmaLetra, Centro=>$TurmaCentro));
+					}
+					unset($TurmaNome); unset($TurmaCod); unset($NumTurmas);
+				}
 			}
 		}
 		
