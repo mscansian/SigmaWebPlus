@@ -110,7 +110,7 @@ class cRequest
 	private function validate()
 	{
 		global $CONFIG;
-		if ((strlen($this->username) != 9) || ($this->password == '') || ($this->version == '') || ((strlen($this->hash) != 32) && (strlen($this->hash) != 0)))
+		if ((strlen($this->username) < 8) || ($this->password == '') || ($this->version == '') || ((strlen($this->hash) != 32) && (strlen($this->hash) != 0)))
 		{
 			$this->valid = false;
 			$this->notes = "username, password or version invalid";
